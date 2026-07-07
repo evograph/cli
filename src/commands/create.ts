@@ -1,7 +1,9 @@
 import { saveObject } from "#/storage/objectStore.js";
 import type { ECSObject } from "#/core/ECSObject.js";
-
+import { ObjectRepository } from "#/repositories/ObjectRepository.js";
+const repository = new ObjectRepository();
 export function createTestObject() {
+
   const object: ECSObject = {
     header: {
       type: "note",
@@ -19,7 +21,7 @@ export function createTestObject() {
     },
   };
 
-  const { id, created } = saveObject(object);
+  const { id, created } = repository.save(object);
 
   if (created) {
     console.log(`Evolved: new object recorded at ${id}`);
