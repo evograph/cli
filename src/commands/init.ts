@@ -1,6 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
-
+const folders = [
+    "objects",
+    "refs",
+    "index",
+    "artifacts",
+    "tmp",
+  ];
 export function initRepository() {
   const root = process.cwd();
 
@@ -12,6 +18,10 @@ export function initRepository() {
   }
 
   fs.mkdirSync(evolution);
-
+  for (const folder of folders) {
+    fs.mkdirSync(path.join(evolution, folder), {
+      recursive: true,
+    });
+  }
   console.log("Initialized ECS repository.");
 }
