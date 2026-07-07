@@ -1,10 +1,11 @@
 import { Command } from "commander";
+import { initRepository } from "./commands/init.js";
 
 const program = new Command();
 
 program
-  .name("ecs")
-  .description("Evolution Control System")
-  .version("0.1.0");
+  .command("init")
+  .description("Initialize ECS repository")
+  .action(initRepository);
 
 program.parse();
