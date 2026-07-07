@@ -2,6 +2,9 @@
   "name": "ecs",
   "version": "0.1.0",
   "type": "module",
+  "imports": {
+    "#/*": "./src/*"
+  },
   "bin": {
     "ecs": "./bin/ecs.js"
   },

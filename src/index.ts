@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { initRepository } from "./commands/init.js";
+import { initRepository } from "#/commands/init.js";
 
 const program = new Command();
 

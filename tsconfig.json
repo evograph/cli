@@ -10,6 +10,9 @@
     "module": "nodenext",
     "target": "esnext",
     "types": ["node"],
+    "paths": {
+      "#/*": ["./src/*"]
+    },
 
     // Other Outputs
     "sourceMap": true,
