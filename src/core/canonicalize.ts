@@ -1,8 +1,8 @@
-import type { ECSObject } from "./ECSObject.js";
+import type { ECSObjectRecord } from "./ECSObjectRecord.js";
 
-export function canonicalize(object: ECSObject): string {
+export function canonicalize(record: ECSObjectRecord): string {
   return JSON.stringify({
-    header: object.header,
-    content: object.content,
+    header: record.header,
+    content: record.content,
   });
 }

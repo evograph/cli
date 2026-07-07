@@ -1,4 +1,5 @@
 import type { ECSObject } from "#/core/ECSObject.js";
+import { deserialize } from "#/core/registry.js";
 import type { IObjectRepository } from "./IObjectRepository.js";
 import type { SaveObjectResult } from "#/storage/objectStore.js";
 
@@ -10,12 +11,14 @@ import {
 } from "#/storage/objectStore.js";
 
 export class ObjectRepository implements IObjectRepository {
-  save(object: ECSObject): SaveObjectResult {
-    return saveObject(object);
+  save(object: ECSObject<unknown>): SaveObjectResult {
+    object.validate();
+    return saveObject(object.toJSON());
   }
 
-  load(id: string): ECSObject {
-    return loadObject(id);
+  load(id: string): ECSObject<unknown> {
+    const record = loadObject(id);
+    return deserialize(record);
   }
 
   exists(id: string): boolean {

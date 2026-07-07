@@ -1,27 +1,15 @@
-import { saveObject } from "#/storage/objectStore.js";
-import type { ECSObject } from "#/core/ECSObject.js";
 import { ObjectRepository } from "#/repositories/ObjectRepository.js";
+import { Note } from "#/types/Note.js";
+
 const repository = new ObjectRepository();
+
 export function createTestObject() {
+  const note = new Note({
+    title: "Hello ECS Object",
+    body: "My first ECS object",
+  });
 
-  const object: ECSObject = {
-    header: {
-      type: "note",
-      schemaVersion: 1,
-    },
-
-    content: {
-      title: "Hello ECS Object",
-      body: "My first ECS object",
-    },
-
-    metadata: {
-      createdAt: new Date().toISOString(),
-      version: 1,
-    },
-  };
-
-  const { id, created } = repository.save(object);
+  const { id, created } = repository.save(note);
 
   if (created) {
     console.log(`Evolved: new object recorded at ${id}`);

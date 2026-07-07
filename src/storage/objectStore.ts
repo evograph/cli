@@ -2,11 +2,9 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { canonicalize } from "#/core/canonicalize.js";
-import type { ECSObject } from "#/core/ECSObject.js";
+import type { ECSObjectRecord } from "#/core/ECSObjectRecord.js";
 import { hash } from "#/utils/hash.js";
 import { OBJECTS_DIR } from "#/config/paths.js";
-
-
 
 function getObjectPath(id: string): string {
   const dir = id.substring(0, 2);
@@ -47,32 +45,25 @@ export type SaveObjectResult = {
   created: boolean;
 };
 
-export function saveObject(object: ECSObject): SaveObjectResult {
-  // Generate the object ID from its canonical representation
-  const id = hash(canonicalize(object));
+export function saveObject(record: ECSObjectRecord): SaveObjectResult {
+  const id = hash(canonicalize(record));
 
   const filePath = getObjectPath(id);
 
-  // Ensure the directory exists
   fs.mkdirSync(path.dirname(filePath), {
     recursive: true,
   });
 
   const created = !fs.existsSync(filePath);
 
-  // Store the complete object only once
   if (created) {
-    fs.writeFileSync(
-      filePath,
-      JSON.stringify(object),
-      "utf8"
-    );
+    fs.writeFileSync(filePath, JSON.stringify(record), "utf8");
   }
 
   return { id, created };
 }
 
-export function loadObject(id: string): ECSObject {
+export function loadObject(id: string): ECSObjectRecord {
   const resolvedId = resolveObjectId(id);
   const filePath = getObjectPath(resolvedId);
 
@@ -82,7 +73,7 @@ export function loadObject(id: string): ECSObject {
 
   const json = fs.readFileSync(filePath, "utf8");
 
-  return JSON.parse(json) as ECSObject;
+  return JSON.parse(json) as ECSObjectRecord;
 }
 
 export function objectExists(id: string): boolean {
@@ -90,23 +81,23 @@ export function objectExists(id: string): boolean {
 }
 
 export function listObjects(): string[] {
-    if (!fs.existsSync(OBJECTS_DIR)) {
-      return [];
-    }
-  
-    const ids: string[] = [];
-  
-    for (const dir of fs.readdirSync(OBJECTS_DIR)) {
-      const dirPath = path.join(OBJECTS_DIR, dir);
-  
-      if (!fs.statSync(dirPath).isDirectory()) {
-        continue;
-      }
-  
-      for (const file of fs.readdirSync(dirPath)) {
-        ids.push(dir + file);
-      }
-    }
-  
-    return ids;
+  if (!fs.existsSync(OBJECTS_DIR)) {
+    return [];
   }
+
+  const ids: string[] = [];
+
+  for (const dir of fs.readdirSync(OBJECTS_DIR)) {
+    const dirPath = path.join(OBJECTS_DIR, dir);
+
+    if (!fs.statSync(dirPath).isDirectory()) {
+      continue;
+    }
+
+    for (const file of fs.readdirSync(dirPath)) {
+      ids.push(dir + file);
+    }
+  }
+
+  return ids;
+}

@@ -5,5 +5,5 @@ const repository = new ObjectRepository();
 export function showObject(id: string) {
   const object = repository.load(id);
 
-  console.log(JSON.stringify(object, null, 2));
+  console.log(JSON.stringify(object.toJSON(), null, 2));
 }
