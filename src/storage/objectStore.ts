@@ -1,15 +1,24 @@
 import fs from "node:fs";
 import path from "node:path";
 import { hash } from "#/utils/hash.js";
+import type { ECSObject } from "#/core/ECSObject.js";
 
 const OBJECTS_DIR = path.join(process.cwd(), ".evolution", "objects");
 
 export function saveObject(data: unknown): string {
-  // Convert object into deterministic JSON
-  const json = JSON.stringify(data, null, 2);
+    const object = data as ECSObject;
 
-  // Generate object ID
-  const id = hash(json);
+    // Hash ONLY the content
+    const contentJson = JSON.stringify(object.content);
+    
+    const id = hash(contentJson);
+    
+    // Store everything
+    const json = JSON.stringify(
+        object,
+        null,
+        2
+    );
 
   // Split hash into directory + filename
   const dir = id.substring(0, 2);
