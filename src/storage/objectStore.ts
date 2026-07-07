@@ -1,9 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { canonicalize } from "#/core/canonicalize.js";
 import type { ECSObjectRecord } from "#/core/ECSObjectRecord.js";
-import { hash } from "#/utils/hash.js";
 import { OBJECTS_DIR } from "#/config/paths.js";
 
 function getObjectPath(id: string): string {
@@ -45,9 +43,10 @@ export type SaveObjectResult = {
   created: boolean;
 };
 
-export function saveObject(record: ECSObjectRecord): SaveObjectResult {
-  const id = hash(canonicalize(record));
-
+export function saveObject(
+  record: ECSObjectRecord,
+  id: string
+): SaveObjectResult {
   const filePath = getObjectPath(id);
 
   fs.mkdirSync(path.dirname(filePath), {
