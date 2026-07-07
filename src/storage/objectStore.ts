@@ -15,7 +15,12 @@ function getObjectPath(id: string): string {
   return path.join(OBJECTS_DIR, dir, file);
 }
 
-export function saveObject(object: ECSObject): string {
+export type SaveObjectResult = {
+  id: string;
+  created: boolean;
+};
+
+export function saveObject(object: ECSObject): SaveObjectResult {
   // Generate the object ID from its canonical representation
   const id = hash(canonicalize(object));
 
@@ -26,8 +31,10 @@ export function saveObject(object: ECSObject): string {
     recursive: true,
   });
 
+  const created = !fs.existsSync(filePath);
+
   // Store the complete object only once
-  if (!fs.existsSync(filePath)) {
+  if (created) {
     fs.writeFileSync(
       filePath,
       JSON.stringify(object),
@@ -35,7 +42,7 @@ export function saveObject(object: ECSObject): string {
     );
   }
 
-  return id;
+  return { id, created };
 }
 
 export function loadObject(id: string): ECSObject {

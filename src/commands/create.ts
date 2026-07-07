@@ -9,7 +9,7 @@ export function createTestObject() {
     },
 
     content: {
-      title: "Hello ECS",
+      title: "Hello ECS Object",
       body: "My first ECS object",
     },
 
@@ -19,7 +19,13 @@ export function createTestObject() {
     },
   };
 
-  const id = saveObject(object);
+  const { id, created } = saveObject(object);
 
-  console.log("Object created:", id);
+  if (created) {
+    console.log(`Evolved: new object recorded at ${id}`);
+  } else {
+    console.log(
+      `No evolution: header and content are unchanged — this state already exists at ${id}`
+    );
+  }
 }
