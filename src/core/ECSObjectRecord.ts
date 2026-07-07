@@ -1,6 +1,11 @@
+export type Author = {
+  name: string;
+  mail?: string;
+};
+
 export type ECSObjectMetadata = {
   createdAt: string;
-  author?: string;
+  author?: Author;
   version: number;
 };
 

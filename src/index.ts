@@ -14,6 +14,8 @@ program
 program
   .command("create")
   .description("Create a new object")
+  .option("--author <name>", "Override the object author name")
+  .option("--author-email <mail>", "Override the object author email")
   .action(createTestObject);
 program
   .command("show <id>")
