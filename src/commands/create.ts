@@ -1,19 +1,25 @@
 import { saveObject } from "#/storage/objectStore.js";
+import type { ECSObject } from "#/core/ECSObject.js";
 
 export function createTestObject() {
+  const object: ECSObject = {
+    header: {
+      type: "note",
+      schemaVersion: 1,
+    },
 
-    const object = {
+    content: {
+      title: "Hello ECS",
+      body: "My first ECS object",
+    },
 
-        type: "note",
+    metadata: {
+      createdAt: new Date().toISOString(),
+      version: 1,
+    },
+  };
 
-        title: "Hello ECS",
+  const id = saveObject(object);
 
-        createdAt: new Date().toISOString()
-
-    };
-
-    const id = saveObject(object);
-
-    console.log("Object created:", id);
-
+  console.log("Object created:", id);
 }
