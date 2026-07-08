@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { initRepository } from "#/commands/init.js";
-import { createTestObject } from "#/commands/create.js";
+import { createCommand } from "#/commands/create.js";
 import { listObjectsCommand } from "#/commands/list.js";
 import { showObject } from "#/commands/show.js";
 import { linkObjects } from "#/commands/link.js";
@@ -20,11 +20,11 @@ program
   .action(initRepository);
 
 program
-  .command("create")
-  .description("Create a new object")
+  .command("create [type]")
+  .description("Create an object interactively (note, problem, decision)")
   .option("--author <name>", "Override the object author name")
   .option("--author-email <mail>", "Override the object author email")
-  .action(createTestObject);
+  .action(createCommand);
 program
   .command("show <id>")
   .description("Show an ECS object")
@@ -61,4 +61,4 @@ program
   .description("Show a textual graph starting from an object")
   .action(graphCommand);
 
-program.parse();
+program.parseAsync();

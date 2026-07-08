@@ -9,4 +9,6 @@ export interface IObjectRepository {
   exists(id: string): boolean;
 
   list(): string[];
+
+  listByType(type: string): { id: string; object: ECSObject<unknown> }[];
 }

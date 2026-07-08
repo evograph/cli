@@ -30,4 +30,24 @@ export class ObjectRepository implements IObjectRepository {
   list(): string[] {
     return listObjects();
   }
+
+  listByType(
+    type: string
+  ): { id: string; object: ECSObject<unknown> }[] {
+    const result: { id: string; object: ECSObject<unknown> }[] = [];
+
+    for (const id of this.list()) {
+      try {
+        const object = this.load(id);
+
+        if (object.type === type) {
+          result.push({ id, object });
+        }
+      } catch {
+        // Skip objects that fail to deserialize
+      }
+    }
+
+    return result;
+  }
 }
