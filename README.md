@@ -22,10 +22,14 @@ This document describes the **current state (v0.1)** and how to test it end-to-e
 
 ---
 
+
+
 ## Requirements
 
 - Node.js 20+
 - npm
+
+
 
 ## Setup
 
@@ -43,13 +47,21 @@ The `--` separates npm args from ECS args.
 
 ---
 
+
+
 ## Repository layout
 
 Running `init` creates a `.evolution/` directory:
 
 ```
 .evolution/
-  objects/     # content-addressed objects (notes, edges)
+  objects/
+    notes/     # note objects (content-addressed by id)
+    problems/  # problem objects
+    decisions/ # decision objects
+    changes/   # git-change objects
+    edges/     # relationship edges
+    ...        # other types (fallback buckets)
   index/       # graph index (incoming/outgoing edge lookups)
   refs/        # reserved for future named pointers
   artifacts/   # reserved for future large artifacts
@@ -58,23 +70,30 @@ Running `init` creates a `.evolution/` directory:
 
 ---
 
+
+
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `init` | Initialize an ECS repository (`.evolution/`) |
-| `create [type]` | Create an object interactively (`note`, `problem`, `decision`) |
-| `show <id>` | Print an object and its relationships |
-| `list` | List all object IDs |
-| `link <from> <to> <relation>` | Create a typed edge between two objects |
-| `neighbors <id>` | Show direct incoming + outgoing relationships |
-| `ancestors <id>` | Walk incoming edges (what led here) |
-| `descendants <id>` | Walk outgoing edges (what follows) |
-| `graph <id>` | Print a textual graph from an object |
+
+| Command                       | Description                                                    |
+| ----------------------------- | -------------------------------------------------------------- |
+| `init`                        | Initialize an ECS repository (`.evolution/`)                   |
+| `create [type]`               | Create an object interactively (`note`, `problem`, `decision`) |
+| `show <id>`                   | Print a human-readable summary and its relationships           |
+| `browse`                      | Interactively pick decisions/problems and follow links         |
+| `list`                        | List all object IDs                                            |
+| `link <from> <to> <relation>` | Create a typed edge between two objects                        |
+| `neighbors <id>`              | Show direct incoming + outgoing relationships                  |
+| `ancestors <id>`              | Walk incoming edges (what led here)                            |
+| `descendants <id>`            | Walk outgoing edges (what follows)                             |
+| `graph <id>`                  | Print a textual graph from an object                           |
+
 
 **Relations:** `solves`, `informed_by`, `implemented_by`, `supersedes`, `relates_to`
 
 ---
+
+
 
 ## Testing the current state
 
@@ -100,6 +119,8 @@ npm run dev -- create problem     # or preselect the type
 Expected on success: `Created <type> <id>`. Re-creating the same content shows `No evolution: this <type> already exists at <id>` (deduplication).
 
 > Interactive prompts require a real terminal (TTY).
+
+
 
 ### 3. List objects
 
@@ -163,6 +184,8 @@ Outgoing:
   • solves → note (<short-id>)
 ```
 
+
+
 ### 7. Traverse the graph
 
 ```bash
@@ -181,6 +204,8 @@ note (<decision>)
     note (<problem>)
 ```
 
+s
+
 ### 8. Author attribution (optional)
 
 ```bash
@@ -193,6 +218,8 @@ Author is stored in metadata and does **not** affect the object ID.
 
 ---
 
+
+
 ## Type-check
 
 ```bash
@@ -200,6 +227,8 @@ npx tsc --noEmit
 ```
 
 ---
+
+
 
 ## Architecture
 
@@ -230,6 +259,8 @@ Domain model:  ECSObject (abstract)
 
 ---
 
+
+
 ## Roadmap
 
 - **Now:** typed nodes + typed edges + traversal + interactive `create` + git change linking ✅
@@ -238,7 +269,10 @@ Domain model:  ECSObject (abstract)
 
 ---
 
+
+
 ## Notes
 
 - This is an early prototype (v0.1). `create` is interactive and requires a TTY.
 - ECS complements Git — it is not a replacement. Git stays the source of truth for code; ECS is the source of truth for project knowledge.
+

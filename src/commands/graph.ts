@@ -1,18 +1,15 @@
 import { GraphRepository } from "#/repositories/GraphRepository.js";
 import { ObjectRepository } from "#/repositories/ObjectRepository.js";
+import { objectTitle, shortId } from "#/services/objectView.js";
 import { resolveObjectId } from "#/storage/objectStore.js";
 import type { Neighbor } from "#/repositories/GraphRepository.js";
 
 const repository = new ObjectRepository();
 const graph = new GraphRepository();
 
-function shortId(id: string): string {
-  return id.substring(0, 8);
-}
-
 function describeNode(nodeId: string): string {
   const node = repository.load(nodeId);
-  return `${node.type} (${shortId(nodeId)})`;
+  return `${node.type}: ${objectTitle(node)} (${shortId(nodeId)})`;
 }
 
 function printNeighborList(title: string, neighbors: Neighbor[]) {

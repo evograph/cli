@@ -4,11 +4,51 @@ import path from "node:path";
 import type { ECSObjectRecord } from "#/core/ECSObjectRecord.js";
 import { OBJECTS_DIR } from "#/config/paths.js";
 
-function getObjectPath(id: string): string {
+function getTypeFolder(type: string): string {
+  switch (type) {
+    case "note":
+      return "notes";
+    case "problem":
+      return "problems";
+    case "decision":
+      return "decisions";
+    case "edge":
+      return "edges";
+    case "change":
+      return "changes";
+    default:
+      return "misc";
+  }
+}
+
+function getLegacyObjectPath(id: string): string {
   const dir = id.substring(0, 2);
   const file = id.substring(2);
 
   return path.join(OBJECTS_DIR, dir, file);
+}
+
+function getTypedObjectPath(type: string, id: string): string {
+  const dir = id.substring(0, 2);
+  const file = id.substring(2);
+  return path.join(OBJECTS_DIR, getTypeFolder(type), dir, file);
+}
+
+function findObjectPath(id: string): string | undefined {
+  const legacyPath = getLegacyObjectPath(id);
+  if (fs.existsSync(legacyPath)) {
+    return legacyPath;
+  }
+
+  const typeFolders = ["notes", "problems", "decisions", "edges", "changes", "misc"];
+  for (const folder of typeFolders) {
+    const typedPath = path.join(OBJECTS_DIR, folder, id.substring(0, 2), id.substring(2));
+    if (fs.existsSync(typedPath)) {
+      return typedPath;
+    }
+  }
+
+  return undefined;
 }
 
 export function resolveObjectId(input: string): string {
@@ -47,7 +87,7 @@ export function saveObject(
   record: ECSObjectRecord,
   id: string
 ): SaveObjectResult {
-  const filePath = getObjectPath(id);
+  const filePath = getTypedObjectPath(record.header.type, id);
 
   fs.mkdirSync(path.dirname(filePath), {
     recursive: true,
@@ -64,9 +104,9 @@ export function saveObject(
 
 export function loadObject(id: string): ECSObjectRecord {
   const resolvedId = resolveObjectId(id);
-  const filePath = getObjectPath(resolvedId);
+  const filePath = findObjectPath(resolvedId);
 
-  if (!fs.existsSync(filePath)) {
+  if (!filePath) {
     throw new Error(`Object '${resolvedId}' not found.`);
   }
 
@@ -76,7 +116,7 @@ export function loadObject(id: string): ECSObjectRecord {
 }
 
 export function objectExists(id: string): boolean {
-  return fs.existsSync(getObjectPath(id));
+  return findObjectPath(id) !== undefined;
 }
 
 export function listObjects(): string[] {
@@ -84,19 +124,39 @@ export function listObjects(): string[] {
     return [];
   }
 
-  const ids: string[] = [];
+  const ids = new Set<string>();
 
-  for (const dir of fs.readdirSync(OBJECTS_DIR)) {
-    const dirPath = path.join(OBJECTS_DIR, dir);
+  for (const topLevelEntry of fs.readdirSync(OBJECTS_DIR)) {
+    const topLevelPath = path.join(OBJECTS_DIR, topLevelEntry);
 
-    if (!fs.statSync(dirPath).isDirectory()) {
+    if (!fs.statSync(topLevelPath).isDirectory()) {
       continue;
     }
 
-    for (const file of fs.readdirSync(dirPath)) {
-      ids.push(dir + file);
+    // Backward-compatible: legacy layout at objects/<shard>/<hash>
+    if (/^[a-f0-9]{2}$/.test(topLevelEntry)) {
+      for (const file of fs.readdirSync(topLevelPath)) {
+        ids.add(topLevelEntry + file);
+      }
+      continue;
+    }
+
+    // Typed layout: objects/<type-folder>/<shard>/<hash>
+    for (const shardDir of fs.readdirSync(topLevelPath)) {
+      if (!/^[a-f0-9]{2}$/.test(shardDir)) {
+        continue;
+      }
+
+      const shardPath = path.join(topLevelPath, shardDir);
+      if (!fs.statSync(shardPath).isDirectory()) {
+        continue;
+      }
+
+      for (const file of fs.readdirSync(shardPath)) {
+        ids.add(shardDir + file);
+      }
     }
   }
 
-  return ids;
+  return [...ids];
 }

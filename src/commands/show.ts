@@ -1,19 +1,16 @@
 import { GraphRepository } from "#/repositories/GraphRepository.js";
 import { ObjectRepository } from "#/repositories/ObjectRepository.js";
+import { objectTitle, renderHumanSummary, shortId } from "#/services/objectView.js";
 import { resolveObjectId } from "#/storage/objectStore.js";
 
 const repository = new ObjectRepository();
 const graph = new GraphRepository();
 
-function shortId(id: string): string {
-  return id.substring(0, 8);
-}
-
 export function showObject(id: string) {
   const resolvedId = resolveObjectId(id);
   const object = repository.load(resolvedId);
 
-  console.log(JSON.stringify(object.toJSON(), null, 2));
+  console.log(renderHumanSummary(resolvedId, object));
 
   const { incoming, outgoing } = graph.neighbors(resolvedId);
 
@@ -28,7 +25,7 @@ export function showObject(id: string) {
     for (const neighbor of incoming) {
       const node = repository.load(neighbor.nodeId);
       console.log(
-        `  • ${neighbor.relation} ← ${node.type} (${shortId(neighbor.nodeId)})`
+        `  • ${neighbor.relation} ← ${node.type}: ${objectTitle(node)} (${shortId(neighbor.nodeId)})`
       );
     }
   }
@@ -38,7 +35,7 @@ export function showObject(id: string) {
     for (const neighbor of outgoing) {
       const node = repository.load(neighbor.nodeId);
       console.log(
-        `  • ${neighbor.relation} → ${node.type} (${shortId(neighbor.nodeId)})`
+        `  • ${neighbor.relation} → ${node.type}: ${objectTitle(node)} (${shortId(neighbor.nodeId)})`
       );
     }
   }

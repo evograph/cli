@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { browseCommand } from "#/commands/browse.js";
 import { initRepository } from "#/commands/init.js";
 import { createCommand } from "#/commands/create.js";
 import { listObjectsCommand } from "#/commands/list.js";
@@ -27,8 +28,12 @@ program
   .action(createCommand);
 program
   .command("show <id>")
-  .description("Show an ECS object")
+  .description("Show an ECS object in a human-readable format")
   .action(showObject);
+program
+  .command("browse")
+  .description("Interactively browse decisions/problems and follow links")
+  .action(browseCommand);
 program
   .command("list")
   .description("List all objects")
