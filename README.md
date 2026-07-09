@@ -204,8 +204,6 @@ note (<decision>)
     note (<problem>)
 ```
 
-s
-
 ### 8. Author attribution (optional)
 
 ```bash
@@ -232,30 +230,50 @@ npx tsc --noEmit
 
 ## Architecture
 
-```
-CLI (commander)
-      │
-      ▼
-Repositories ── ObjectRepository (save/load/list)
-      │         GraphRepository (link/traverse)
-      ▼
-Storage ─────── objectStore (content-addressed blobs)
-                graphIndex   (incoming/outgoing edge maps)
-      │
-      ▼
-Filesystem (.evolution/)
+Vertical-slice layout — each feature owns its command, domain, and persistence:
 
-Domain model:  ECSObject (abstract)
-                 ├── Note
-                 └── Edge
+```text
+src/
+  kernel/           # shared primitives (ECSObject, hash, paths, author, prompts)
+  features/
+    init/           # repository bootstrap
+    objects/        # artifact types, store, repository, registry, view
+    graph/          # edges, linking, traversal
+    create/         # interactive creation + git linking
+    explore/        # human-readable show + browse
+  cli/              # commander wiring (composition root)
 ```
+
+```text
+cli/index.ts
+      │
+      ├── features/init
+      ├── features/objects  (note, problem, decision, change, edge)
+      ├── features/graph
+      ├── features/create
+      └── features/explore
+            │
+            ▼
+      kernel/  (ECSObject, hash, paths, author, prompts)
+            │
+            ▼
+      .evolution/  (filesystem)
+```
+
+**Dependency rules**
+
+| Layer | May import |
+|-------|------------|
+| `kernel/` | only `kernel/` |
+| `features/*` | `kernel/`, other features when needed |
+| `cli/` | all features (composition only) |
 
 **Key design points**
 
 - Object **identity** = `hash(canonicalize(header + content))`. Metadata (author, timestamps) is excluded, so the same content always dedupes.
-- **Storage is dumb** — it only reads/writes JSON records by ID. Domain classes own canonicalization and validation.
-- **Edges are objects too** — a relationship is just an `Edge` object, so it's hashed, deduplicated, and traversable like any other artifact.
-- The **graph index** avoids scanning the whole store: each node keeps lists of the edge IDs that touch it.
+- **Storage is dumb** — `features/objects/object.store.ts` only reads/writes JSON by ID. Domain classes own canonicalization and validation.
+- **Edges are objects too** — relationships are `Edge` artifacts, hashed and deduplicated like any other object.
+- The **graph index** (`features/graph/graph.index.ts`) avoids full-store scans during traversal.
 
 ---
 

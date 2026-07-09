@@ -9,8 +9,8 @@
     "ecs": "./bin/ecs.js"
   },
   "scripts": {
-    "dev": "tsx src/index.ts",
-    "build": "tsc"
+    "dev": "tsx src/cli/index.ts",
+    "build": "tsc && tsc-alias -p tsconfig.json"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +24,7 @@
     "@types/node": "^26.1.0",
     "eslint": "^10.6.0",
     "prettier": "^3.9.4",
+    "tsc-alias": "^1.9.0",
     "tsx": "^4.23.0",
     "typescript": "^6.0.3"
   }
