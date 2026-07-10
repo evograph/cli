@@ -1,1 +1,0 @@
-{"version":3,"file":"author.d.ts","sourceRoot":"","sources":["../../src/kernel/author.ts"],"names":[],"mappings":"AAEA,OAAO,KAAK,EAAE,MAAM,EAAE,MAAM,6BAA6B,CAAC;AAW1D,MAAM,MAAM,eAAe,GAAG;IAC5B,IAAI,CAAC,EAAE,MAAM,CAAC;IACd,IAAI,CAAC,EAAE,MAAM,CAAC;CACf,CAAC;AAEF,wBAAgB,aAAa,CAC3B,SAAS,GAAE,eAAoB,GAC9B,MAAM,GAAG,SAAS,CAgBpB"}

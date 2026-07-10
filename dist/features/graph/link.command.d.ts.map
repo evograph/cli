@@ -1,1 +1,0 @@
-{"version":3,"file":"link.command.d.ts","sourceRoot":"","sources":["../../../src/features/graph/link.command.ts"],"names":[],"mappings":"AAMA,MAAM,MAAM,WAAW,GAAG;IACxB,MAAM,CAAC,EAAE,MAAM,CAAC;IAChB,WAAW,CAAC,EAAE,MAAM,CAAC;CACtB,CAAC;AAEF,wBAAgB,WAAW,CACzB,IAAI,EAAE,MAAM,EACZ,EAAE,EAAE,MAAM,EACV,QAAQ,EAAE,MAAM,EAChB,OAAO,GAAE,WAAgB,QA0B1B"}

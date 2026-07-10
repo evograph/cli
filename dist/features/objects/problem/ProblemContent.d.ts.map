@@ -1,1 +1,0 @@
-{"version":3,"file":"ProblemContent.d.ts","sourceRoot":"","sources":["../../../../src/features/objects/problem/ProblemContent.ts"],"names":[],"mappings":"AAAA,eAAO,MAAM,UAAU,gDAAiD,CAAC;AAEzE,MAAM,WAAW,cAAc;IAC7B,KAAK,EAAE,MAAM,CAAC;IACd,WAAW,EAAE,MAAM,CAAC;IACpB,OAAO,CAAC,EAAE,MAAM,CAAC;IACjB,QAAQ,EAAE,MAAM,CAAC;CAClB"}
