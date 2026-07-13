@@ -10,7 +10,9 @@
   },
   "scripts": {
     "dev": "tsx src/cli/index.ts",
-    "build": "tsc && tsc-alias -p tsconfig.json"
+    "build": "tsc && tsc-alias -p tsconfig.json",
+    "bundle": "npm run build && esbuild dist/cli/index.js --bundle --platform=node --format=cjs --outfile=build/ecs.cjs",
+    "build:bin": "npm run bundle && pkg build/ecs.cjs --targets node20-macos-x64,node20-macos-arm64,node20-linux-x64,node20-win-x64 --output dist/bin/ecs"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +24,8 @@
   },
   "devDependencies": {
     "@types/node": "^26.1.0",
+    "@yao-pkg/pkg": "^6.21.0",
+    "esbuild": "^0.28.1",
     "eslint": "^10.6.0",
     "prettier": "^3.9.4",
     "tsc-alias": "^1.9.0",
