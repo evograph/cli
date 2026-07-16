@@ -11,4 +11,15 @@ describe("hash", () => {
   it("is deterministic for the same input", () => {
     expect(hash("same")).toBe(hash("same"));
   });
+
+  it("hashes the empty string", () => {
+    expect(hash("")).toBe(
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    );
+  });
+
+  it("hashes unicode content as a 64-char hex digest", () => {
+    expect(hash("café")).toMatch(/^[a-f0-9]{64}$/);
+    expect(hash("café")).not.toBe(hash("cafe"));
+  });
 });
