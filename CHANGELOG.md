@@ -1,0 +1,30 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+
+- Open-source contribution docs, issue/PR templates, and CI workflow
+
+## [0.1.0] - 2026-07-16
+
+### Added
+
+- Content-addressed object store with SHA-256 IDs
+- Typed domain objects: `Note`, `Problem`, `Decision`, `Change`, `Edge`
+- Interactive `create` command with typed prompts
+- Git-native change tracking and `implemented_by` edge linking
+- Automatic deduplication for identical content
+- Abbreviated ID resolution
+- Knowledge graph with typed relationships
+- Graph traversal commands: `neighbors`, `ancestors`, `descendants`, `graph`
+- Author attribution via flags, env vars, or git config
+- Explore commands: `show`, `browse`, `list`
+
+[Unreleased]: https://github.com/<your-org-or-user>/ecs/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/<your-org-or-user>/ecs/releases/tag/v0.1.0

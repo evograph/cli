@@ -294,3 +294,27 @@ cli/index.ts
 - This is an early prototype (v0.1). `create` is interactive and requires a TTY.
 - ECS complements Git — it is not a replacement. Git stays the source of truth for code; ECS is the source of truth for project knowledge.
 
+---
+
+## Contributing
+
+Contributions are welcome. Please read:
+
+- [CONTRIBUTING.md](./CONTRIBUTING.md) — setup, coding guidelines, and PR workflow
+- [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
+- [SECURITY.md](./SECURITY.md) — report vulnerabilities privately
+
+Maintainers: see [.github/BRANCH_PROTECTION.md](./.github/BRANCH_PROTECTION.md) before making the repo public.
+
+### Quick start for contributors
+
+```bash
+git clone https://github.com/<your-org-or-user>/ecs.git
+cd ecs
+npm install
+npx tsc --noEmit
+npm run build
+```
+
+Open a pull request against `main`. Direct pushes to `main` are not accepted.
+
