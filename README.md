@@ -309,7 +309,7 @@ Maintainers: see [.github/BRANCH_PROTECTION.md](./.github/BRANCH_PROTECTION.md) 
 ### Quick start for contributors
 
 ```bash
-git clone https://github.com/<your-org-or-user>/ecs.git
+git clone https://github.com/acefolioDev/ecs.git
 cd ecs
 npm install
 npx tsc --noEmit

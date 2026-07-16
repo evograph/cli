@@ -26,5 +26,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Author attribution via flags, env vars, or git config
 - Explore commands: `show`, `browse`, `list`
 
-[Unreleased]: https://github.com/<your-org-or-user>/ecs/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/<your-org-or-user>/ecs/releases/tag/v0.1.0
+[Unreleased]: https://github.com/acefolioDev/ecs/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/acefolioDev/ecs/releases/tag/v0.1.0

@@ -63,8 +63,8 @@ Recommended settings:
   - `CONTRIBUTING.md`
   - `CHANGELOG.md`
   - `.github/ISSUE_TEMPLATE/config.yml`
-  - `CODE_OF_CONDUCT.md` (`conduct@your-domain.com`)
-  - `SECURITY.md` (`security@your-domain.com`)
+  - `CODE_OF_CONDUCT.md` (`contact@acefolio.dev`)
+  - `SECURITY.md` (`contact@acefolio.dev`)
 - [ ] Confirm `.gitignore` excludes `dist/`, `build/`, `.evolution/`
 - [ ] Push `main` with docs/templates/CI
 - [ ] Verify CI passes on a test PR

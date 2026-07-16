@@ -12,7 +12,7 @@
 
 Instead, report them privately using one of these channels:
 
-- Email: **security@your-domain.com**
+- Email: **contact@acefolio.dev**
 - GitHub Security Advisories: use the **Report a vulnerability** button on the repository Security tab (once enabled)
 
 Include as much detail as possible:

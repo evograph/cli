@@ -50,7 +50,7 @@ Good first contributions:
 ### Install and run
 
 ```bash
-git clone https://github.com/<your-org-or-user>/ecs.git
+git clone https://github.com/acefolioDev/ecs.git
 cd ecs
 npm install
 ```
@@ -227,7 +227,7 @@ Maintainers handle versioning and releases.
 
 ## Questions
 
-- Open a [GitHub Discussion](https://github.com/<your-org-or-user>/ecs/discussions) for questions
+- Open a [GitHub Discussion](https://github.com/acefolioDev/ecs/discussions) for questions
 - Open an issue for bugs and feature proposals
 - See [SECURITY.md](./SECURITY.md) for vulnerability reports (do not open public issues for security bugs)
 
