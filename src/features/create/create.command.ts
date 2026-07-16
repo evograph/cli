@@ -7,9 +7,8 @@ import {
   select,
 } from "@clack/prompts";
 
-import { resolveAuthor } from "#/kernel/author.js";
-import { ECSObject } from "#/kernel/ECSObject.js";
 import type { ECSObjectMetadata } from "#/kernel/ECSObjectRecord.js";
+import { ECSObject } from "#/kernel/ECSObject.js";
 import {
   ensure,
   optionalText,
@@ -24,6 +23,19 @@ import {
   getWorktreeChanges,
   isGitRepo,
 } from "#/features/create/git.service.js";
+import {
+  decisionFromFlags,
+  hasDecisionFlags,
+  hasNoteFlags,
+  hasProblemFlags,
+  noteFromFlags,
+  problemFromFlags,
+  resolveCreateMeta,
+  type AuthorOptions,
+  type DecisionFlags,
+  type NoteFlags,
+  type ProblemFlags,
+} from "#/features/create/create.service.js";
 import { Change } from "#/features/objects/change/Change.js";
 import type { ChangedFile } from "#/features/objects/change/ChangeContent.js";
 import { Decision } from "#/features/objects/decision/Decision.js";
@@ -31,6 +43,7 @@ import { DECISION_STATUSES } from "#/features/objects/decision/DecisionContent.j
 import { Note } from "#/features/objects/note/Note.js";
 import { Problem } from "#/features/objects/problem/Problem.js";
 import { SEVERITIES } from "#/features/objects/problem/ProblemContent.js";
+import { shortId } from "#/features/objects/object.view.js";
 
 const repository = new ObjectRepository();
 const graph = new GraphRepository();
@@ -38,14 +51,12 @@ const graph = new GraphRepository();
 const OBJECT_TYPES = ["note", "problem", "decision"] as const;
 type ObjectType = (typeof OBJECT_TYPES)[number];
 
-export type CreateOptions = {
-  author?: string;
-  authorEmail?: string;
-};
-
-function shortId(id: string): string {
-  return id.substring(0, 8);
-}
+export type CreateOptions = AuthorOptions &
+  NoteFlags &
+  ProblemFlags &
+  DecisionFlags & {
+    /** Alias used by CLI for note body vs problem description conflict — handled via flags */
+  };
 
 function sortFiles(files: ChangedFile[]): ChangedFile[] {
   return [...files].sort((a, b) => a.path.localeCompare(b.path));
@@ -262,23 +273,81 @@ async function maybeLinkGitChanges(
   );
 }
 
+function tryNonInteractiveCreate(
+  type: ObjectType,
+  options: CreateOptions,
+  meta: Partial<ECSObjectMetadata>
+): { id: string; created: boolean } | null {
+  if (type === "note" && hasNoteFlags(options)) {
+    return noteFromFlags(
+      { title: options.title!, body: options.body! },
+      meta
+    );
+  }
+
+  if (type === "problem" && hasProblemFlags(options)) {
+    return problemFromFlags(
+      {
+        title: options.title!,
+        description: options.description!,
+        severity: options.severity!,
+        ...(options.context !== undefined ? { context: options.context } : {}),
+      },
+      meta
+    );
+  }
+
+  if (type === "decision" && hasDecisionFlags(options)) {
+    return decisionFromFlags(
+      {
+        title: options.title!,
+        chosen: options.chosen!,
+        rationale: options.rationale!,
+        status: options.status!,
+        ...(options.alternatives !== undefined
+          ? { alternatives: options.alternatives }
+          : {}),
+        ...(options.problem !== undefined ? { problem: options.problem } : {}),
+        ...(options.expectedOutcome !== undefined
+          ? { expectedOutcome: options.expectedOutcome }
+          : {}),
+      },
+      meta
+    );
+  }
+
+  return null;
+}
+
 export async function createCommand(
   typeArg: string | undefined,
   options: CreateOptions = {}
 ): Promise<void> {
-  intro("ecs create");
+  const meta = resolveCreateMeta(options);
 
-  const author = resolveAuthor({
-    ...(options.author !== undefined ? { name: options.author } : {}),
-    ...(options.authorEmail !== undefined ? { mail: options.authorEmail } : {}),
-  });
-  const meta: Partial<ECSObjectMetadata> = author ? { author } : {};
-
-  let type: ObjectType;
+  let type: ObjectType | undefined;
 
   if (typeArg && (OBJECT_TYPES as readonly string[]).includes(typeArg)) {
     type = typeArg as ObjectType;
-  } else {
+  }
+
+  // Non-interactive path: type + required flags → no TTY prompts
+  if (type) {
+    const nonInteractive = tryNonInteractiveCreate(type, options, meta);
+    if (nonInteractive) {
+      const { id, created } = nonInteractive;
+      if (created) {
+        console.log(`Created ${type} ${id}`);
+      } else {
+        console.log(`No evolution: this ${type} already exists at ${id}`);
+      }
+      return;
+    }
+  }
+
+  intro("ecs create");
+
+  if (!type) {
     if (typeArg) {
       log.warn(`Unknown type '${typeArg}'. Choose one below.`);
     }

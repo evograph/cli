@@ -67,18 +67,24 @@ The `--` separates npm args from ECS args.
 
 | Command | Purpose |
 |---------|---------|
-| `npm run dev -- init` | Initialize a local `.evolution/` repo for testing |
+| `npm run dev -- init --agents cursor,claude` | Initialize `.evolution/` + agent rule adapters |
+| `npm run dev -- context` | Dump graph context for agents |
+| `npm run dev -- close-session ...` | Record problem + decision at chat end |
 | `npm run build` | Compile TypeScript to `dist/` |
 | `npx tsc --noEmit` | Type-check without writing output |
 | `npm run bundle` | Build bundled CLI artifact |
 
 ### Local testing workflow
 
-1. `npm run dev -- init`
-2. Exercise commands (`create`, `list`, `show`, `link`, `graph`, etc.)
+1. `npm run dev -- init --agents cursor`
+2. Exercise commands (`context`, `create`, `close-session`, `list`, `show`, `link`, `graph`, etc.)
 3. Confirm type-check and build pass before opening a PR
 
-> `create` and `browse` require an interactive terminal (TTY).
+> Interactive `create` and `browse` require a TTY. Prefer non-interactive flags / `close-session` for agent and CI use.
+
+### Agent protocol files
+
+When scaffolding agents, prefer editing `.evolution/AGENT.md` (canonical). Thin adapters (`.cursor/rules/ecs.mdc`, `AGENTS.md`, `CLAUDE.md`, etc.) should stay short pointers.
 
 ## Project structure
 
@@ -88,11 +94,11 @@ ECS uses a vertical-slice architecture:
 src/
   kernel/           # shared primitives (ECSObject, hash, paths, author, prompts)
   features/
-    init/           # repository bootstrap
+    init/           # repository bootstrap + agent rule scaffolding
     objects/        # artifact types, store, repository, registry, view
     graph/          # edges, linking, traversal
-    create/         # interactive creation + git linking
-    explore/        # human-readable show + browse
+    create/         # interactive/non-interactive creation + close-session + git linking
+    explore/        # show, browse, context
   cli/              # commander wiring (composition root)
 ```
 

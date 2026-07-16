@@ -77,8 +77,10 @@ Running `init` creates a `.evolution/` directory:
 
 | Command                       | Description                                                    |
 | ----------------------------- | -------------------------------------------------------------- |
-| `init`                        | Initialize an ECS repository (`.evolution/`)                   |
-| `create [type]`               | Create an object interactively (`note`, `problem`, `decision`) |
+| `init`                        | Initialize `.evolution/` and optional AI agent rule files      |
+| `context`                     | Dump non-interactive graph context (for AI agents at chat start) |
+| `close-session`               | Create problem + decision and link them (chat end, non-interactive) |
+| `create [type]`               | Create an object (interactive, or non-interactive with flags)  |
 | `show <id>`                   | Print a human-readable summary and its relationships           |
 | `browse`                      | Interactively pick decisions/problems and follow links         |
 | `list`                        | List all object IDs                                            |
@@ -86,10 +88,58 @@ Running `init` creates a `.evolution/` directory:
 | `neighbors <id>`              | Show direct incoming + outgoing relationships                  |
 | `ancestors <id>`              | Walk incoming edges (what led here)                            |
 | `descendants <id>`            | Walk outgoing edges (what follows)                             |
-| `graph <id>`                  | Print a textual graph from an object                           |
+| `graph [id]`                  | Print the full evolution graph, or a tree from one object      |
 
 
 **Relations:** `solves`, `informed_by`, `implemented_by`, `supersedes`, `relates_to`
+
+---
+
+## AI agent scaffolding
+
+`ecs init` can write a canonical protocol plus thin adapters so coding agents load ECS context and record decisions.
+
+```bash
+npm run dev -- init --agents cursor,claude,copilot
+npm run dev -- init --agents custom --custom-path .myagent/RULES.md
+npm run dev -- init --agents cursor,claude --force   # overwrite existing adapters
+```
+
+Supported agents: `cursor`, `claude`, `codex`, `copilot`, `windsurf`, `antigravity`, `custom`.
+
+| Output | Purpose |
+|--------|---------|
+| `.evolution/AGENT.md` | Canonical protocol (source of truth) |
+| `AGENTS.md` | Shared adapter (Claude/Codex/Windsurf/Antigravity) |
+| `.cursor/rules/ecs.mdc` | Cursor |
+| `CLAUDE.md` | Claude Code |
+| `.github/copilot-instructions.md` | GitHub Copilot |
+| `.windsurf/rules/ecs.md` | Windsurf |
+| custom path | Any other agent |
+
+**Protocol (best-effort):** agents are instructed to run `context` at chat start and `close-session` once at the end of a decision-making chat. Rules cannot force compliance until MCP/hooks exist.
+
+```bash
+# Chat start — load graph context
+npm run dev -- context
+
+# Chat end — record problem + decision + solves link
+npm run dev -- close-session \
+  --problem-title "..." \
+  --problem-description "..." \
+  --decision-title "..." \
+  --chosen "..." \
+  --rationale "..." \
+  --alternatives "a,b,c"
+```
+
+Non-interactive create (single objects):
+
+```bash
+npm run dev -- create note --title "..." --body "..."
+npm run dev -- create problem --title "..." --description "..." --severity medium
+npm run dev -- create decision --title "..." --chosen "..." --rationale "..." --status in-progress --alternatives "a,b"
+```
 
 ---
 
@@ -102,10 +152,10 @@ Follow this walkthrough to exercise every feature.
 ### 1. Initialize
 
 ```bash
-npm run dev -- init
+npm run dev -- init --agents cursor,claude
 ```
 
-Expected: `Initialized ECS repository.` and a new `.evolution/` folder.
+Expected: `Initialized ECS repository.`, `.evolution/`, and agent rule files (e.g. `.cursor/rules/ecs.mdc`, `CLAUDE.md`, `AGENTS.md`).
 
 ### 2. Create an object
 
@@ -192,16 +242,17 @@ Outgoing:
 npm run dev -- neighbors <decision-id>
 npm run dev -- ancestors <problem-id>
 npm run dev -- descendants <decision-id>
+npm run dev -- graph
 npm run dev -- graph <decision-id>
 ```
 
-`graph` prints a textual tree:
+`graph` with no id prints the **complete** project evolution graph (every connected component, rooted at nodes with no incoming edges). With an id, it prints a textual tree from that object:
 
 ```
-note (<decision>)
+decision: Choose X (a1b2c3d4)
     │ solves
     ▼
-    note (<problem>)
+    problem: Need X (e5f6g7h8)
 ```
 
 ### 8. Author attribution (optional)
@@ -236,11 +287,11 @@ Vertical-slice layout — each feature owns its command, domain, and persistence
 src/
   kernel/           # shared primitives (ECSObject, hash, paths, author, prompts)
   features/
-    init/           # repository bootstrap
+    init/           # repository bootstrap + agent rule scaffolding
     objects/        # artifact types, store, repository, registry, view
     graph/          # edges, linking, traversal
-    create/         # interactive creation + git linking
-    explore/        # human-readable show + browse
+    create/         # interactive/non-interactive creation + close-session + git linking
+    explore/        # show, browse, context
   cli/              # commander wiring (composition root)
 ```
 
@@ -281,8 +332,8 @@ cli/index.ts
 
 ## Roadmap
 
-- **Now:** typed nodes + typed edges + traversal + interactive `create` + git change linking ✅
-- **Next:** named refs, richer git linking, non-interactive/scriptable `create` flags
+- **Now:** typed nodes + typed edges + traversal + interactive `create` + git change linking + agent rule scaffolding + `context` / `close-session` ✅
+- **Next:** named refs, richer git linking, Cursor hooks / MCP tools for stronger agent enforcement
 - **Then:** `ecs ask` (AI over the graph), SynthCode artifacts
 
 ---
