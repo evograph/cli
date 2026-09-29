@@ -1,6 +1,5 @@
 node_modules
 node_modules/*
-.evolution
 .DS_Store
 dist/
 build/
