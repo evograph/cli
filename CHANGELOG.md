@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-29
+
+### Changed
+
+- README aimed at npm users (`npm install -g @evograph/cli`, `ecs` usage) instead of contributor dev workflow
+- GitHub issue templates refreshed with clearer prompts and labels
+- CI: disable npm dependency cache until `package-lock.json` is committed (fixes setup-node lockfile error)
+
+### Fixed
+
+- npm publish tarball ships `bin/` + `dist/` via `files` in `package.json` (global install runs compiled CLI)
+
+## [0.1.0] - 2026-09-29
+
 ### Changed
 
 - npm package published as `@evograph/cli` with install docs and publish metadata (homepage [evograph.app](https://evograph.app))
@@ -19,11 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ecs close-session` — create problem + decision and `solves` link at chat end
 - Non-interactive `ecs create` flags (`--title`, `--body`, `--description`, `--chosen`, etc.)
 - `ecs graph` with no id prints the complete project evolution graph (all roots / components)
-
-## [0.1.0] - 2026-07-16
-
-### Added
-
 - Content-addressed object store with SHA-256 IDs
 - Typed domain objects: `Note`, `Problem`, `Decision`, `Change`, `Edge`
 - Interactive `create` command with typed prompts
@@ -35,5 +44,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Author attribution via flags, env vars, or git config
 - Explore commands: `show`, `browse`, `list`
 
-[Unreleased]: https://github.com/acefolioDev/ecs/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/acefolioDev/ecs/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/acefolioDev/ecs/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/acefolioDev/ecs/releases/tag/v0.1.0
