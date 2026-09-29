@@ -92,6 +92,7 @@ Optional: scaffold agent instructions so coding tools load ECS context:
 ecs init --agents cursor,claude,copilot
 ecs init --agents custom --custom-path .myagent/RULES.md
 ecs init --agents cursor,claude --force   # overwrite existing adapter files
+ecs init --cli-prefix "npx ecs"           # optional: custom command prefix in agent docs (default: ecs)
 ```
 
 Supported agents: `cursor`, `claude`, `codex`, `copilot`, `windsurf`, `antigravity`, `custom`.

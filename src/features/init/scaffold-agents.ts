@@ -9,6 +9,7 @@ import {
   cursorRuleMarkdown,
   customAdapterMarkdown,
   windsurfRuleMarkdown,
+  DEFAULT_CLI_PREFIX,
 } from "#/features/init/templates.js";
 
 export const BUILTIN_AGENTS = [
@@ -67,7 +68,7 @@ export type ScaffoldOptions = {
 export function scaffoldAgentFiles(options: ScaffoldOptions): WriteResult[] {
   const root = options.root ?? process.cwd();
   const force = options.force ?? false;
-  const cliPrefix = options.cliPrefix ?? "npm run dev --";
+  const cliPrefix = options.cliPrefix ?? DEFAULT_CLI_PREFIX;
   const results: WriteResult[] = [];
 
   const evolutionAgent = path.join(root, ".evolution", "AGENT.md");

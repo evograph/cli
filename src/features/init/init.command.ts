@@ -17,6 +17,7 @@ const folders = ["objects", "refs", "index", "artifacts", "tmp"];
 export type InitOptions = {
   agents?: string;
   customPath?: string;
+  cliPrefix?: string;
   force?: boolean;
 };
 
@@ -175,6 +176,7 @@ export async function initRepository(options: InitOptions = {}): Promise<void> {
       agents,
       force: options.force ?? false,
       ...(customPath !== undefined ? { customPath } : {}),
+      ...(options.cliPrefix !== undefined ? { cliPrefix: options.cliPrefix } : {}),
     });
     printScaffoldResults(results);
   } catch (error) {

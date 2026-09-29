@@ -7,15 +7,16 @@ import {
 
 describe("templates", () => {
   it("interpolates the default cli prefix", () => {
-    expect(agentProtocolMarkdown()).toContain("npm run dev -- context");
-    expect(thinAdapterBlurb()).toContain("`npm run dev -- context`");
+    expect(agentProtocolMarkdown()).toContain("ecs context");
+    expect(thinAdapterBlurb()).toContain("`ecs context`");
+    expect(thinAdapterBlurb()).toContain("`ecs create`");
     expect(agentsMdMarkdown()).toContain(".evolution/AGENT.md");
   });
 
   it("interpolates a custom cli prefix", () => {
-    const markdown = agentProtocolMarkdown("ecs");
-    expect(markdown).toContain("ecs context");
-    expect(markdown).toContain("ecs close-session");
-    expect(markdown).not.toContain("npm run dev -- context");
+    const markdown = agentProtocolMarkdown("npm run dev --");
+    expect(markdown).toContain("npm run dev -- context");
+    expect(markdown).toContain("npm run dev -- close-session");
+    expect(markdown).not.toContain("ecs context");
   });
 });

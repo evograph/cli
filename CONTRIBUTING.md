@@ -67,7 +67,7 @@ The `--` separates npm args from ECS args.
 
 | Command | Purpose |
 |---------|---------|
-| `npm run dev -- init --agents cursor,claude` | Initialize `.evolution/` + agent rule adapters |
+| `npm run dev -- init --agents cursor,claude --cli-prefix "npm run dev --"` | Initialize `.evolution/` + agent rule adapters (this repo’s prefix) |
 | `npm run dev -- context` | Dump graph context for agents |
 | `npm run dev -- close-session ...` | Record problem + decision at chat end |
 | `npm run build` | Compile TypeScript to `dist/` |
@@ -76,7 +76,7 @@ The `--` separates npm args from ECS args.
 
 ### Local testing workflow
 
-1. `npm run dev -- init --agents cursor`
+1. `npm run dev -- init --agents cursor --cli-prefix "npm run dev --"`
 2. Exercise commands (`context`, `create`, `close-session`, `list`, `show`, `link`, `graph`, etc.)
 3. Confirm type-check and build pass before opening a PR
 
@@ -84,7 +84,7 @@ The `--` separates npm args from ECS args.
 
 ### Agent protocol files
 
-When scaffolding agents, prefer editing `.evolution/AGENT.md` (canonical). Thin adapters (`.cursor/rules/ecs.mdc`, `AGENTS.md`, `CLAUDE.md`, etc.) should stay short pointers.
+When scaffolding agents, prefer editing `.evolution/AGENT.md` (canonical). Thin adapters (`.cursor/rules/ecs.mdc`, `AGENTS.md`, `CLAUDE.md`, etc.) should stay short pointers. Published `ecs init` defaults to the `ecs` command in those files; use `--cli-prefix "npm run dev --"` when working in this repository.
 
 ## Project structure
 

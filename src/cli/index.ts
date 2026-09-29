@@ -31,6 +31,10 @@ program
     "--custom-path <path>",
     "Rules file path when using the custom agent"
   )
+  .option(
+    "--cli-prefix <prefix>",
+    "Command prefix in scaffolded agent docs (default: ecs)"
+  )
   .option("--force", "Overwrite existing agent rule files", false)
   .action(initRepository);
 

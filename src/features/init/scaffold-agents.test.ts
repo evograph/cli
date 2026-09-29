@@ -34,6 +34,9 @@ describe("scaffold-agents", () => {
     expect(fs.existsSync(path.join(root, ".evolution", "AGENT.md"))).toBe(
       true,
     );
+    expect(
+      fs.readFileSync(path.join(root, ".evolution", "AGENT.md"), "utf8"),
+    ).toContain("ecs context");
     expect(fs.existsSync(path.join(root, "AGENTS.md"))).toBe(true);
     expect(fs.existsSync(path.join(root, "CLAUDE.md"))).toBe(true);
     expect(

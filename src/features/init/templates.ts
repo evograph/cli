@@ -1,4 +1,8 @@
-export function agentProtocolMarkdown(cliPrefix = "npm run dev --"): string {
+export const DEFAULT_CLI_PREFIX = "ecs";
+
+export function agentProtocolMarkdown(
+  cliPrefix: string = DEFAULT_CLI_PREFIX
+): string {
   return `# ECS Agent Protocol
 
 This repository uses **ECS (Evolution Control System)** to track problems, decisions, and how they connect. Compliance is best-effort until MCP/hooks exist — follow this protocol whenever you work in this repo.
@@ -52,16 +56,20 @@ ${cliPrefix} close-session \\
 `;
 }
 
-export function thinAdapterBlurb(cliPrefix = "npm run dev --"): string {
+export function thinAdapterBlurb(
+  cliPrefix: string = DEFAULT_CLI_PREFIX
+): string {
   return `This repo uses ECS (.evolution/). Follow \`.evolution/AGENT.md\`.
 
 Before coding: \`${cliPrefix} context\`
 At end of a decision-making chat (once): \`${cliPrefix} close-session\` with problem + decision flags.
-Do not use interactive \`ecs create\` / \`ecs browse\`.
+Do not use interactive \`${cliPrefix} create\` / \`${cliPrefix} browse\`.
 Never store secrets in ECS objects.`;
 }
 
-export function cursorRuleMarkdown(cliPrefix = "npm run dev --"): string {
+export function cursorRuleMarkdown(
+  cliPrefix: string = DEFAULT_CLI_PREFIX
+): string {
   return `---
 description: ECS evolution tracking — load context at start, record decisions at end
 alwaysApply: true
@@ -73,7 +81,9 @@ ${thinAdapterBlurb(cliPrefix)}
 `;
 }
 
-export function windsurfRuleMarkdown(cliPrefix = "npm run dev --"): string {
+export function windsurfRuleMarkdown(
+  cliPrefix: string = DEFAULT_CLI_PREFIX
+): string {
   return `---
 trigger: always_on
 description: ECS evolution tracking
@@ -85,7 +95,9 @@ ${thinAdapterBlurb(cliPrefix)}
 `;
 }
 
-export function agentsMdMarkdown(cliPrefix = "npm run dev --"): string {
+export function agentsMdMarkdown(
+  cliPrefix: string = DEFAULT_CLI_PREFIX
+): string {
   return `# AGENTS
 
 ${thinAdapterBlurb(cliPrefix)}
@@ -94,7 +106,9 @@ Full protocol: [\`.evolution/AGENT.md\`](.evolution/AGENT.md)
 `;
 }
 
-export function claudeMdMarkdown(cliPrefix = "npm run dev --"): string {
+export function claudeMdMarkdown(
+  cliPrefix: string = DEFAULT_CLI_PREFIX
+): string {
   return `# Claude Code — ECS
 
 ${thinAdapterBlurb(cliPrefix)}
@@ -103,7 +117,9 @@ Full protocol: [\`.evolution/AGENT.md\`](.evolution/AGENT.md)
 `;
 }
 
-export function copilotInstructionsMarkdown(cliPrefix = "npm run dev --"): string {
+export function copilotInstructionsMarkdown(
+  cliPrefix: string = DEFAULT_CLI_PREFIX
+): string {
   return `# Copilot instructions — ECS
 
 ${thinAdapterBlurb(cliPrefix)}
@@ -112,7 +128,9 @@ Full protocol: see \`.evolution/AGENT.md\` in this repository.
 `;
 }
 
-export function customAdapterMarkdown(cliPrefix = "npm run dev --"): string {
+export function customAdapterMarkdown(
+  cliPrefix: string = DEFAULT_CLI_PREFIX
+): string {
   return `# ECS Agent Instructions
 
 ${thinAdapterBlurb(cliPrefix)}
