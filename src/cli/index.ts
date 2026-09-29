@@ -17,8 +17,11 @@ import { RELATIONS } from "#/features/objects/edge/EdgeContent.js";
 import { DECISION_STATUSES } from "#/features/objects/decision/DecisionContent.js";
 import { SEVERITIES } from "#/features/objects/problem/ProblemContent.js";
 import { BUILTIN_AGENTS } from "#/features/init/scaffold-agents.js";
+import { getCliVersion } from "#/kernel/package-version.js";
 
 const program = new Command();
+
+program.version(getCliVersion());
 
 program
   .command("init")

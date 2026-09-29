@@ -7,6 +7,7 @@ import {
   objectTitle,
   shortId,
 } from "#/features/objects/object.view.js";
+import { getCliVersion } from "#/kernel/package-version.js";
 import { ECS_DIR } from "#/kernel/paths.js";
 
 const repository = new ObjectRepository();
@@ -80,6 +81,8 @@ export function contextCommand(options: ContextOptions = {}): void {
   const decisions = sortByCreatedDesc(repository.listByType("decision"));
 
   console.log("=== ECS CONTEXT ===");
+  console.log("");
+  console.log(`CLI version: ${getCliVersion()}`);
   console.log("");
 
   console.log("## Problems");
