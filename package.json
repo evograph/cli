@@ -1,6 +1,6 @@
 {
   "name": "@evograph/cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Evograph CLI — evolution knowledge graph for your repo",
   "type": "module",
   "homepage": "https://evograph.app",

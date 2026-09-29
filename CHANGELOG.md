@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-09-29
+
+### Added
+
+- `ecs init --cli-prefix` to customize command strings in scaffolded agent docs
+- `ecs --version` and CLI version line in `ecs context` output
+
+### Changed
+
+- Agent scaffolding defaults to the `ecs` command (not `npm run dev --`) for npm installs
+
+### Fixed
+
+- Scaffolded agent adapters use the same CLI prefix for `create` / `browse` as for `context` / `close-session`
+
 ## [0.1.1] - 2026-09-29
 
 ### Changed
@@ -44,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Author attribution via flags, env vars, or git config
 - Explore commands: `show`, `browse`, `list`
 
-[Unreleased]: https://github.com/acefolioDev/ecs/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/acefolioDev/ecs/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/acefolioDev/ecs/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/acefolioDev/ecs/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/acefolioDev/ecs/releases/tag/v0.1.0
