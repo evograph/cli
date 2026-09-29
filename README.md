@@ -1,6 +1,6 @@
-# ECS — Evolution Control System
+# Evograph — Evolution Control System
 
-> Git tracks history. ECS tracks **evolution**.
+> Git tracks history. Evograph tracks **evolution**.
 
 ECS is a knowledge layer that versions *meaning* instead of files. Where Git stores commits (file snapshots), ECS stores **typed artifacts** and the **relationships** between them, forming a knowledge graph of how ideas, problems, and decisions connect.
 
@@ -29,9 +29,20 @@ This document describes the **current state (v0.1)** and how to test it end-to-e
 - Node.js 20+
 - npm
 
+## Install (npm)
 
+For day-to-day use, install the CLI globally:
 
-## Setup
+```bash
+npm install -g @evograph/cli
+ecs init
+```
+
+**Maintainer:** Muhammad Atif · [acefolio.dev](https://acefolio.dev) · GitHub [@acefolioDev](https://github.com/acefolioDev)
+
+## Development setup
+
+Clone the repo and run from source:
 
 ```bash
 npm install
@@ -43,7 +54,7 @@ All commands run through the `dev` script:
 npm run dev -- <command> [args]
 ```
 
-The `--` separates npm args from ECS args.
+The `--` separates npm args from Evograph/ECS args.
 
 ---
 

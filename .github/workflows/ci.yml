@@ -29,3 +29,16 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Test
+        run: npm test
+
+      - name: Verify publish tarball
+        run: |
+          npm pack --dry-run 2>&1 | tee pack.log
+          grep -q 'dist/cli/index.js' pack.log
+          grep -q 'bin/ecs.js' pack.log
+          if grep -q 'src/cli/index.ts' pack.log; then
+            echo "Publish tarball must not include src/"
+            exit 1
+          fi

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- npm package published as `@evograph/cli` with install docs and publish metadata (homepage [evograph.app](https://evograph.app))
+
 ### Added
 
 - Open-source contribution docs, issue/PR templates, and CI workflow

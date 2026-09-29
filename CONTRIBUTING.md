@@ -231,6 +231,32 @@ Maintainers handle versioning and releases.
 - Releases are tagged (`v0.1.0`, `v0.2.0`, etc.)
 - `main` should remain releasable at all times
 
+### Publishing `@evograph/cli` to npm
+
+The package ships compiled `dist/` and `bin/` only (see `files` in [`package.json`](./package.json)).
+
+1. Bump `version` in `package.json` and update [`CHANGELOG.md`](./CHANGELOG.md).
+2. Log in as an npm user with access to the [evograph org](https://www.npmjs.com/settings/evograph/packages): `npm login`
+3. From the repo root:
+
+   ```bash
+   npm publish
+   ```
+
+   `prepublishOnly` runs `build` and `test`; scoped packages use `publishConfig.access: "public"`.
+
+4. Smoke-test locally before publishing:
+
+   ```bash
+   npm run build
+   npm pack --dry-run   # must list dist/cli/index.js, not src/
+   npm pack
+   npm install -g ./evograph-cli-<version>.tgz
+   ecs --help
+   ```
+
+5. After publish, confirm [npmjs.com/package/@evograph/cli](https://www.npmjs.com/package/@evograph/cli) and update [evograph.app](https://evograph.app) install docs if needed.
+
 ## Questions
 
 - Open a [GitHub Discussion](https://github.com/acefolioDev/ecs/discussions) for questions
