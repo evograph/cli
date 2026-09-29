@@ -1,8 +1,14 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Ask a question
+  - name: 💬 Ask a question
     url: https://github.com/acefolioDev/ecs/discussions
-    about: Use GitHub Discussions for questions and ideas that are not bugs or feature requests
-  - name: Security vulnerability
+    about: Questions and open-ended ideas — not bugs or feature requests
+  - name: 🔒 Security vulnerability
     url: https://github.com/acefolioDev/ecs/security/policy
     about: Report security issues privately — do not open a public issue
+  - name: 📦 npm package
+    url: https://www.npmjs.com/package/@evograph/cli
+    about: Install `@evograph/cli` and check published versions
+  - name: 🌐 evograph.app
+    url: https://evograph.app
+    about: Product site and install docs

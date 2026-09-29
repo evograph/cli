@@ -1,27 +1,28 @@
-name: Feature request
-description: Suggest an idea or improvement
+name: ✨ Feature request
+description: Share an idea to evolve Evograph.
 title: "[Feature]: "
 labels: ["enhancement", "triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for suggesting an improvement.
-        For large ideas, consider opening a discussion first.
+        ## 💡 Love this energy
+
+        Thanks for suggesting an improvement. For **big** ideas, consider a [Discussion](https://github.com/acefolioDev/ecs/discussions) first so we can shape it together.
 
   - type: textarea
     id: problem
     attributes:
-      label: Problem statement
+      label: 🎯 Problem statement
       description: What problem does this solve? Who is affected?
-      placeholder: "As a contributor, I want non-interactive create flags so CI can seed objects..."
+      placeholder: "As a team lead, I want `ecs graph` export so I can share evolution in reviews..."
     validations:
       required: true
 
   - type: textarea
     id: proposal
     attributes:
-      label: Proposed solution
+      label: 🚀 Proposed solution
       description: Describe the behavior you want
     validations:
       required: true
@@ -29,24 +30,24 @@ body:
   - type: textarea
     id: alternatives
     attributes:
-      label: Alternatives considered
+      label: 🔀 Alternatives considered
       description: Other approaches you thought about (optional)
 
   - type: dropdown
     id: scope
     attributes:
-      label: Estimated scope
+      label: 📐 Estimated scope
       options:
-        - Small (docs/UX copy)
-        - Medium (single feature slice)
-        - Large (architecture change)
+        - "🪶 Small (docs / UX copy)"
+        - "📦 Medium (single feature slice)"
+        - "🏗️ Large (architecture change)"
     validations:
       required: true
 
   - type: checkboxes
     id: willing
     attributes:
-      label: Contribution
+      label: 🤝 Contribution
       options:
-        - label: I am willing to open a pull request for this
+        - label: I am willing to open a pull request for this 🎉
           required: false
