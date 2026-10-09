@@ -31,9 +31,7 @@ describe("scaffold-agents", () => {
     });
 
     expect(first.every((r) => r.status === "written")).toBe(true);
-    expect(fs.existsSync(path.join(root, ".evolution", "AGENT.md"))).toBe(
-      true,
-    );
+    expect(fs.existsSync(path.join(root, ".evolution", "AGENT.md"))).toBe(true);
     expect(
       fs.readFileSync(path.join(root, ".evolution", "AGENT.md"), "utf8"),
     ).toContain("ecs context");
@@ -42,9 +40,9 @@ describe("scaffold-agents", () => {
     expect(
       fs.existsSync(path.join(root, ".github", "copilot-instructions.md")),
     ).toBe(true);
-    expect(
-      fs.existsSync(path.join(root, ".windsurf", "rules", "ecs.md")),
-    ).toBe(true);
+    expect(fs.existsSync(path.join(root, ".windsurf", "rules", "ecs.md"))).toBe(
+      true,
+    );
 
     const skipped = scaffoldAgentFiles({
       root,
@@ -61,9 +59,37 @@ describe("scaffold-agents", () => {
   });
 
   it("requires customPath for custom agents", () => {
-    expect(() =>
-      scaffoldAgentFiles({ root, agents: ["custom"] }),
-    ).toThrow(/Custom agent requires --custom-path/);
+    expect(() => scaffoldAgentFiles({ root, agents: ["custom"] })).toThrow(
+      /Custom agent requires --custom-path/,
+    );
+    expect(fs.existsSync(path.join(root, ".evolution"))).toBe(false);
+  });
+
+  it("preserves project instructions and updates only one ECS section", () => {
+    fs.writeFileSync(
+      path.join(root, "AGENTS.md"),
+      "# Team conventions\nKeep our formatter.\n",
+    );
+    scaffoldAgentFiles({ root, agents: ["codex"] });
+    scaffoldAgentFiles({
+      root,
+      agents: ["codex"],
+      cliPrefix: "npx --no-install ecs",
+    });
+    const text = fs.readFileSync(path.join(root, "AGENTS.md"), "utf8");
+    expect(text).toContain("Keep our formatter.");
+    expect(text.match(/<!-- evograph:start -->/g)).toHaveLength(1);
+    expect(text).toContain("npx --no-install ecs remember");
+    expect(text).not.toContain("`ecs remember");
+  });
+
+  it("keeps rule frontmatter first and preserves it on repeated setup", () => {
+    scaffoldAgentFiles({ root, agents: ["windsurf"] });
+    const rule = path.join(root, ".windsurf", "rules", "ecs.md");
+    const first = fs.readFileSync(rule, "utf8");
+    expect(first.startsWith("---\ntrigger: always_on")).toBe(true);
+    scaffoldAgentFiles({ root, agents: ["windsurf"] });
+    expect(fs.readFileSync(rule, "utf8")).toBe(first);
   });
 
   it("writes a custom adapter path and AGENTS.md when basename matches", () => {

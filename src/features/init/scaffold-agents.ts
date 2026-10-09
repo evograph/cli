@@ -30,30 +30,53 @@ export function isBuiltinAgent(value: string): value is BuiltinAgent {
 
 export type WriteResult = {
   path: string;
-  status: "written" | "skipped" | "forced";
+  status: "written" | "skipped" | "forced" | "updated";
 };
+
+const START = "<!-- evograph:start -->";
+const END = "<!-- evograph:end -->";
 
 function writeFileSafe(
   filePath: string,
   content: string,
-  force: boolean
+  force: boolean,
 ): WriteResult {
   const absolute = path.resolve(filePath);
   const exists = fs.existsSync(absolute);
 
+  // Cursor/Windsurf must see YAML frontmatter at the start of the file.
+  const frontmatter = content.match(/^---\n[\s\S]*?\n---\n/)?.[0] ?? "";
+  const managed = `${START}\n${content.slice(frontmatter.length).trim()}\n${END}\n`;
+  let output = frontmatter + managed;
   if (exists && !force) {
-    return { path: absolute, status: "skipped" };
+    const previous = fs.readFileSync(absolute, "utf8");
+    const start = previous.indexOf(START);
+    const end = previous.indexOf(END);
+    if (start >= 0 !== end >= 0 || (start >= 0 && end < start))
+      throw new Error(
+        `Incomplete ECS markers in ${absolute}; repair the markers before updating.`,
+      );
+    output =
+      start >= 0
+        ? previous.slice(0, start) +
+          managed.trimEnd() +
+          previous.slice(end + END.length)
+        : `${previous.trimEnd()}\n\n${managed}`;
+    if (output === previous) return { path: absolute, status: "skipped" };
   }
 
   fs.mkdirSync(path.dirname(absolute), { recursive: true });
-  fs.writeFileSync(absolute, content, "utf8");
+  fs.writeFileSync(absolute, output, "utf8");
 
-  return { path: absolute, status: exists ? "forced" : "written" };
+  return {
+    path: absolute,
+    status: exists ? (force ? "forced" : "updated") : "written",
+  };
 }
 
 function needsAgentsMd(agents: BuiltinAgent[]): boolean {
   return agents.some((agent) =>
-    ["claude", "codex", "antigravity", "windsurf"].includes(agent)
+    ["claude", "codex", "antigravity", "windsurf"].includes(agent),
   );
 }
 
@@ -66,6 +89,8 @@ export type ScaffoldOptions = {
 };
 
 export function scaffoldAgentFiles(options: ScaffoldOptions): WriteResult[] {
+  if (options.agents.includes("custom") && !options.customPath)
+    throw new Error("Custom agent requires --custom-path <file>.");
   const root = options.root ?? process.cwd();
   const force = options.force ?? false;
   const cliPrefix = options.cliPrefix ?? DEFAULT_CLI_PREFIX;
@@ -73,7 +98,7 @@ export function scaffoldAgentFiles(options: ScaffoldOptions): WriteResult[] {
 
   const evolutionAgent = path.join(root, ".evolution", "AGENT.md");
   results.push(
-    writeFileSafe(evolutionAgent, agentProtocolMarkdown(cliPrefix), force)
+    writeFileSafe(evolutionAgent, agentProtocolMarkdown(cliPrefix), force),
   );
 
   const agents = options.agents;
@@ -88,8 +113,8 @@ export function scaffoldAgentFiles(options: ScaffoldOptions): WriteResult[] {
       writeFileSafe(
         path.join(root, "AGENTS.md"),
         agentsMdMarkdown(cliPrefix),
-        force
-      )
+        force,
+      ),
     );
   }
 
@@ -98,8 +123,8 @@ export function scaffoldAgentFiles(options: ScaffoldOptions): WriteResult[] {
       writeFileSafe(
         path.join(root, ".cursor", "rules", "ecs.mdc"),
         cursorRuleMarkdown(cliPrefix),
-        force
-      )
+        force,
+      ),
     );
   }
 
@@ -108,8 +133,8 @@ export function scaffoldAgentFiles(options: ScaffoldOptions): WriteResult[] {
       writeFileSafe(
         path.join(root, "CLAUDE.md"),
         claudeMdMarkdown(cliPrefix),
-        force
-      )
+        force,
+      ),
     );
     // AGENTS.md already handled above when claude selected
   }
@@ -119,8 +144,8 @@ export function scaffoldAgentFiles(options: ScaffoldOptions): WriteResult[] {
       writeFileSafe(
         path.join(root, ".github", "copilot-instructions.md"),
         copilotInstructionsMarkdown(cliPrefix),
-        force
-      )
+        force,
+      ),
     );
   }
 
@@ -129,15 +154,15 @@ export function scaffoldAgentFiles(options: ScaffoldOptions): WriteResult[] {
       writeFileSafe(
         path.join(root, ".windsurf", "rules", "ecs.md"),
         windsurfRuleMarkdown(cliPrefix),
-        force
-      )
+        force,
+      ),
     );
   }
 
   if (agents.includes("custom")) {
     if (!options.customPath) {
       throw new Error(
-        "Custom agent requires --custom-path <file> (or provide a path interactively)."
+        "Custom agent requires --custom-path <file> (or provide a path interactively).",
       );
     }
 
@@ -146,7 +171,7 @@ export function scaffoldAgentFiles(options: ScaffoldOptions): WriteResult[] {
       : path.join(root, options.customPath);
 
     results.push(
-      writeFileSafe(target, customAdapterMarkdown(cliPrefix), force)
+      writeFileSafe(target, customAdapterMarkdown(cliPrefix), force),
     );
   }
 

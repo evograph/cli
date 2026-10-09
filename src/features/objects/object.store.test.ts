@@ -1,7 +1,4 @@
-import {
-  getMockPaths,
-  useEvolutionFixture,
-} from "#/test/evolution-fixture.js";
+import { getMockPaths, useEvolutionFixture } from "#/test/evolution-fixture.js";
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -22,12 +19,7 @@ function sampleRecord(type = "note") {
 
 describe("object.store", () => {
   it("saves under typed shard layout and does not overwrite", async () => {
-    const {
-      saveObject,
-      loadObject,
-      objectExists,
-      listObjects,
-    } = await store();
+    const { saveObject, loadObject, objectExists, listObjects } = await store();
     const id = "aa" + "b".repeat(62);
 
     const first = saveObject(sampleRecord(), id);
@@ -100,5 +92,19 @@ describe("object.store", () => {
     const { listObjects } = await store();
     fs.rmSync(getMockPaths().OBJECTS_DIR, { recursive: true, force: true });
     expect(listObjects()).toEqual([]);
+  });
+
+  it("rejects filesystem paths and overly short IDs", async () => {
+    const { resolveObjectId, objectExists } = await store();
+    for (const input of [
+      "../../etc/passwd",
+      "",
+      "a",
+      "/tmp/secret",
+      "deadbeef/../../secret",
+    ]) {
+      expect(() => resolveObjectId(input)).toThrow(/hexadecimal prefix/);
+      expect(objectExists(input)).toBe(false);
+    }
   });
 });

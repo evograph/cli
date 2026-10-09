@@ -8,7 +8,7 @@ import {
 describe("templates", () => {
   it("interpolates the default cli prefix", () => {
     expect(agentProtocolMarkdown()).toContain("ecs context");
-    expect(thinAdapterBlurb()).toContain("`ecs context`");
+    expect(thinAdapterBlurb()).toContain('`ecs context "current task"`');
     expect(thinAdapterBlurb()).toContain("`ecs create`");
     expect(agentsMdMarkdown()).toContain(".evolution/AGENT.md");
   });

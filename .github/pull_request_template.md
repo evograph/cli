@@ -19,7 +19,7 @@
 <!-- Commands and steps reviewers can run to verify behavior -->
 
 ```bash
-npm install
+npm ci
 npx tsc --noEmit
 npm run build
 # add ECS command walkthrough if behavior changed

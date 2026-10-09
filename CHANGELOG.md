@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `remember`: capture a choice and rationale with two fields, optional problem/file/commit links, preview, JSON, and supersession.
+- `recall`: task-focused retrieval with source IDs, rationale, file scopes, status, and a hard output budget; also available as `context`.
+- Local stdio MCP using the official SDK: recall, inspect, and status tools; recording is explicitly enabled with `--write` / `init --mcp-write`.
+- `doctor`, `status`, JSON inspection, readable record listing, and `--cwd` project selection.
+- Real packaged CLI and MCP client/server regression tests.
+
+### Changed
+
+- Initialization is non-interactive, detects existing tools, and preserves project instructions using managed sections.
+- Commands discover the store from nested directories while respecting Git boundaries.
+- `context` returns selected reasoning instead of a full graph dump. Use `graph` for the whole graph.
+- `list` is human readable by default; use `list --ids` for the previous ID-oriented output.
+- Superseded decisions are omitted from normal recall; use `--include-superseded` for history.
+- Development version is `0.2.0-dev.0`; no npm publication has been performed.
+
+### Compatibility and fixes
+
+- Preserve schema-v1 records, legacy object layouts, existing IDs, and detailed graph commands.
+- Keep rule frontmatter first, merge existing MCP configuration, and refuse unrelated server-name collisions.
+- Read canonical relationships without relying on local indexes; tolerate corrupt cache JSON during link writes.
+- Fail incomplete scripted commands promptly; validate capture inputs before creating records.
+- Parse Git paths without losing spaces, tabs, or rename destinations; pass commit refs without a shell.
+- Reject filesystem paths as record IDs, bound Git author lookup, and keep diagnostic stderr off the MCP protocol stream.
+- Bundle the actual CLI entry point and embed its version for standalone use.
+
 ### Fixed
 
 - Refresh compatible dependency versions in the lockfile; update prompt result typing for Clack 1.8 cancellation symbols.
