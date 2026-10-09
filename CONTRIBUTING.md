@@ -43,14 +43,14 @@ Good first contributions:
 
 ### Requirements
 
-- Node.js 20+
+- Node.js 22.12+
 - npm
 - Git
 
 ### Install and run
 
 ```bash
-git clone https://github.com/acefolioDev/ecs.git
+git clone https://github.com/evograph/cli.git
 cd ecs
 npm install
 ```
@@ -259,7 +259,7 @@ The package ships compiled `dist/` and `bin/` only (see `files` in [`package.jso
 
 ## Questions
 
-- Open a [GitHub Discussion](https://github.com/acefolioDev/ecs/discussions) for questions
+- Open a [GitHub Discussion](https://github.com/evograph/cli/discussions) for questions
 - Open an issue for bugs and feature proposals
 - See [SECURITY.md](./SECURITY.md) for vulnerability reports (do not open public issues for security bugs)
 

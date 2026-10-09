@@ -8,7 +8,7 @@ body:
       value: |
         ## 💡 Love this energy
 
-        Thanks for suggesting an improvement. For **big** ideas, consider a [Discussion](https://github.com/acefolioDev/ecs/discussions) first so we can shape it together.
+        Thanks for suggesting an improvement. For **big** ideas, consider a [Discussion](https://github.com/evograph/cli/discussions) first so we can shape it together.
 
   - type: textarea
     id: problem

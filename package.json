@@ -6,10 +6,10 @@
   "homepage": "https://evograph.app",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/acefolioDev/ecs.git"
+    "url": "git+https://github.com/evograph/cli.git"
   },
   "bugs": {
-    "url": "https://github.com/acefolioDev/ecs/issues"
+    "url": "https://github.com/evograph/cli/issues"
   },
   "author": {
     "name": "Muhammad Atif",
@@ -26,7 +26,7 @@
     "decisions"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12.0"
   },
   "publishConfig": {
     "access": "public"
@@ -44,7 +44,7 @@
     "prepack": "npm run build",
     "prepublishOnly": "npm run build && npm run test",
     "bundle": "npm run build && esbuild dist/cli/index.js --bundle --platform=node --format=cjs --outfile=build/ecs.cjs",
-    "build:bin": "npm run bundle && pkg build/ecs.cjs --targets node20-macos-x64,node20-macos-arm64,node20-linux-x64,node20-win-x64 --output dist/bin/ecs",
+    "build:bin": "npm run bundle && pkg build/ecs.cjs --targets node22-macos-x64,node22-macos-arm64,node22-linux-x64,node22-win-x64 --output dist/bin/ecs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

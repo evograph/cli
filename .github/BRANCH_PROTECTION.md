@@ -24,7 +24,7 @@ Recommended settings:
   - [ ] Dismiss stale pull request approvals when new commits are pushed
 - [ ] **Require status checks to pass before merging**
   - [ ] Require branches to be up to date before merging
-  - [ ] Required check: `CI` (from `.github/workflows/ci.yml`)
+  - [ ] Required checks: `CI (Node 22)` and `CI (Node 24)` (from `.github/workflows/ci.yml`)
 - [ ] **Require conversation resolution before merging**
 - [ ] **Do not allow bypassing the above settings** (including admins, recommended)
 - [ ] **Restrict who can push to matching branches** (optional, strict mode)
@@ -63,8 +63,8 @@ Recommended settings:
   - `CONTRIBUTING.md`
   - `CHANGELOG.md`
   - `.github/ISSUE_TEMPLATE/config.yml`
-  - `CODE_OF_CONDUCT.md` (`contact@acefolio.dev`)
-  - `SECURITY.md` (`contact@acefolio.dev`)
+  - `CODE_OF_CONDUCT.md` (verified public maintainer email)
+  - `SECURITY.md` (verified public maintainer email)
 - [ ] Confirm `.gitignore` excludes `dist/`, `build/`, `.evolution/`
 - [ ] Push `main` with docs/templates/CI
 - [ ] Verify CI passes on a test PR
