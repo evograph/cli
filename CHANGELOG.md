@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Refresh compatible dependency versions in the lockfile; update prompt result typing for Clack 1.8 cancellation symbols.
+- Align repository links and lockfile metadata with `evograph/cli`.
+- Require Node.js 22.12+ to match Commander 15; verify Node.js 22 and 24 in CI using `npm ci`.
+
 ## [0.1.2] - 2026-09-29
 
 ### Added
@@ -59,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Author attribution via flags, env vars, or git config
 - Explore commands: `show`, `browse`, `list`
 
-[Unreleased]: https://github.com/acefolioDev/ecs/compare/v0.1.2...HEAD
-[0.1.2]: https://github.com/acefolioDev/ecs/compare/v0.1.1...v0.1.2
-[0.1.1]: https://github.com/acefolioDev/ecs/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/acefolioDev/ecs/releases/tag/v0.1.0
+[Unreleased]: https://github.com/evograph/cli/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/evograph/cli/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/evograph/cli/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/evograph/cli/releases/tag/v0.1.0

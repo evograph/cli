@@ -3,13 +3,13 @@ import { cancel, isCancel, select, text } from "@clack/prompts";
 const CUSTOM_VALUE = "__custom__";
 
 // Unwrap a clack prompt result, exiting cleanly if the user cancelled (Ctrl+C).
-export function ensure<T>(value: T | symbol): T {
+export function ensure<T>(value: T): Exclude<T, symbol> {
   if (isCancel(value)) {
     cancel("Cancelled.");
     process.exit(0);
   }
 
-  return value as T;
+  return value as Exclude<T, symbol>;
 }
 
 export async function requiredText(

@@ -6,9 +6,15 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   verify:
-    name: CI
+    name: CI (Node ${{ matrix.node }})
+    strategy:
+      matrix:
+        node: [22, 24]
     runs-on: ubuntu-latest
 
     steps:
@@ -18,11 +24,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          # No lockfile is committed (.gitignore); npm cache requires package-lock.json
+          node-version: ${{ matrix.node }}
+          cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Audit runtime dependencies
+        run: npm audit --omit=dev
 
       - name: Type check
         run: npx tsc --noEmit
