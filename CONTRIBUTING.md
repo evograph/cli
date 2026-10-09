@@ -51,8 +51,8 @@ Good first contributions:
 
 ```bash
 git clone https://github.com/evograph/cli.git
-cd ecs
-npm install
+cd cli
+npm ci
 ```
 
 Run the CLI in development mode:
