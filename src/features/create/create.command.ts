@@ -44,6 +44,7 @@ import { Note } from "#/features/objects/note/Note.js";
 import { Problem } from "#/features/objects/problem/Problem.js";
 import { SEVERITIES } from "#/features/objects/problem/ProblemContent.js";
 import { shortId } from "#/features/objects/object.view.js";
+import { requireRepository } from "#/kernel/repository.js";
 
 const repository = new ObjectRepository();
 const graph = new GraphRepository();
@@ -67,9 +68,7 @@ function contentTitle(object: ECSObject<unknown>): string {
   return content.title ?? "(untitled)";
 }
 
-async function buildNote(
-  meta: Partial<ECSObjectMetadata>
-): Promise<Note> {
+async function buildNote(meta: Partial<ECSObjectMetadata>): Promise<Note> {
   const title = await requiredText("Title", "Short summary");
   const body = await requiredText("Body", "The note itself");
 
@@ -77,7 +76,7 @@ async function buildNote(
 }
 
 async function buildProblem(
-  meta: Partial<ECSObjectMetadata>
+  meta: Partial<ECSObjectMetadata>,
 ): Promise<Problem> {
   const title = await requiredText("Problem title", "What is wrong?");
   const description = await requiredText("Description", "Describe the problem");
@@ -94,21 +93,21 @@ async function buildProblem(
       severity,
       ...(context !== undefined ? { context } : {}),
     },
-    meta
+    meta,
   );
 }
 
 async function buildDecision(
-  meta: Partial<ECSObjectMetadata>
+  meta: Partial<ECSObjectMetadata>,
 ): Promise<Decision> {
   const title = await requiredText("Decision title", "What was decided?");
   const problem = await optionalText(
     "Problem this addresses (optional)",
-    "Short description"
+    "Short description",
   );
   const alternativesRaw = await optionalText(
     "Alternatives considered (comma-separated, optional)",
-    "Option A, Option B"
+    "Option A, Option B",
   );
   const alternatives = alternativesRaw
     ? alternativesRaw
@@ -120,7 +119,7 @@ async function buildDecision(
   const rationale = await requiredText("Rationale", "Why this choice");
   const expectedOutcome = await optionalText(
     "Expected outcome (optional)",
-    "What you expect to happen"
+    "What you expect to happen",
   );
   const status = await selectWithCustom({
     message: "Status",
@@ -137,13 +136,13 @@ async function buildDecision(
       ...(problem !== undefined ? { problem } : {}),
       ...(expectedOutcome !== undefined ? { expectedOutcome } : {}),
     },
-    meta
+    meta,
   );
 }
 
 async function maybeLinkProblem(
   decisionId: string,
-  meta: Partial<ECSObjectMetadata>
+  meta: Partial<ECSObjectMetadata>,
 ): Promise<void> {
   const problems = repository.listByType("problem");
 
@@ -155,7 +154,7 @@ async function maybeLinkProblem(
     await confirm({
       message: "Link this decision to an existing problem?",
       initialValue: true,
-    })
+    }),
   );
 
   if (!doLink) {
@@ -170,7 +169,7 @@ async function maybeLinkProblem(
         label: contentTitle(entry.object),
         hint: shortId(entry.id),
       })),
-    })
+    }),
   ) as string;
 
   graph.link(decisionId, problemId, "solves", meta);
@@ -180,7 +179,7 @@ async function maybeLinkProblem(
 async function maybeLinkGitChanges(
   objectId: string,
   type: ObjectType,
-  meta: Partial<ECSObjectMetadata>
+  meta: Partial<ECSObjectMetadata>,
 ): Promise<void> {
   if (!isGitRepo()) {
     return;
@@ -197,7 +196,7 @@ async function maybeLinkGitChanges(
     await confirm({
       message: `Link code changes to this ${type}?`,
       initialValue: true,
-    })
+    }),
   );
 
   if (!doLink) {
@@ -218,7 +217,7 @@ async function maybeLinkGitChanges(
   }
 
   const source = ensure(
-    await select({ message: "Which changes?", options: sourceOptions })
+    await select({ message: "Which changes?", options: sourceOptions }),
   ) as string;
 
   let change: Change;
@@ -233,11 +232,11 @@ async function maybeLinkGitChanges(
         })),
         initialValues: worktree.map((file) => file.path),
         required: true,
-      })
+      }),
     ) as string[];
 
     const files = sortFiles(
-      worktree.filter((file) => selected.includes(file.path))
+      worktree.filter((file) => selected.includes(file.path)),
     );
 
     change = new Change({ kind: "worktree", files }, meta);
@@ -249,7 +248,7 @@ async function maybeLinkGitChanges(
           value: commit.sha,
           label: `${commit.shortSha} ${commit.message}`,
         })),
-      })
+      }),
     ) as string;
 
     const commit = commits.find((entry) => entry.sha === sha)!;
@@ -262,27 +261,24 @@ async function maybeLinkGitChanges(
         message: commit.message,
         files,
       },
-      meta
+      meta,
     );
   }
 
   const { id: changeId } = repository.save(change);
   graph.link(objectId, changeId, "implemented_by", meta);
   log.success(
-    `Linked ${type} --implemented_by--> change (${shortId(changeId)})`
+    `Linked ${type} --implemented_by--> change (${shortId(changeId)})`,
   );
 }
 
 function tryNonInteractiveCreate(
   type: ObjectType,
   options: CreateOptions,
-  meta: Partial<ECSObjectMetadata>
+  meta: Partial<ECSObjectMetadata>,
 ): { id: string; created: boolean } | null {
   if (type === "note" && hasNoteFlags(options)) {
-    return noteFromFlags(
-      { title: options.title!, body: options.body! },
-      meta
-    );
+    return noteFromFlags({ title: options.title!, body: options.body! }, meta);
   }
 
   if (type === "problem" && hasProblemFlags(options)) {
@@ -293,7 +289,7 @@ function tryNonInteractiveCreate(
         severity: options.severity!,
         ...(options.context !== undefined ? { context: options.context } : {}),
       },
-      meta
+      meta,
     );
   }
 
@@ -312,7 +308,7 @@ function tryNonInteractiveCreate(
           ? { expectedOutcome: options.expectedOutcome }
           : {}),
       },
-      meta
+      meta,
     );
   }
 
@@ -321,8 +317,18 @@ function tryNonInteractiveCreate(
 
 export async function createCommand(
   typeArg: string | undefined,
-  options: CreateOptions = {}
+  options: CreateOptions = {},
 ): Promise<void> {
+  requireRepository();
+  if (typeArg && !(OBJECT_TYPES as readonly string[]).includes(typeArg))
+    throw new Error(
+      `Unknown type '${typeArg}'. Use note, problem, or decision.`,
+    );
+  options = {
+    ...options,
+    severity: options.severity ?? "medium",
+    status: options.status ?? "in-progress",
+  };
   const meta = resolveCreateMeta(options);
 
   let type: ObjectType | undefined;
@@ -345,6 +351,10 @@ export async function createCommand(
     }
   }
 
+  if (!process.stdin.isTTY || !process.stdout.isTTY)
+    throw new Error(
+      'Incomplete create command. Use ecs remember "Choice" --because "Reason", or provide the required create flags.',
+    );
   intro("ecs create");
 
   if (!type) {
@@ -364,7 +374,7 @@ export async function createCommand(
             hint: "A choice with rationale",
           },
         ],
-      })
+      }),
     ) as ObjectType;
   }
 

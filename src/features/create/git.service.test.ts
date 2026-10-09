@@ -1,83 +1,69 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-const execSync = vi.fn();
-
+const execFileSync = vi.fn();
 vi.mock("node:child_process", () => ({
-  execSync: (...args: unknown[]) => execSync(...args),
+  execFileSync: (...args: unknown[]) => execFileSync(...args),
 }));
 
 describe("git.service", () => {
   beforeEach(() => {
-    execSync.mockReset();
+    execFileSync.mockReset();
   });
-
-  afterEach(() => {
-    vi.resetModules();
-  });
-
-  async function load() {
-    return import("./git.service.js");
-  }
-
-  it("isGitRepo is true only for work trees", async () => {
-    execSync.mockReturnValue("true");
-    const { isGitRepo } = await load();
-    expect(isGitRepo()).toBe(true);
-
-    vi.resetModules();
-    execSync.mockImplementation(() => {
+  afterEach(() => vi.resetModules());
+  const load = () => import("./git.service.js");
+  it("detects work trees", async () => {
+    execFileSync.mockReturnValue("true\n");
+    const service = await load();
+    expect(service.isGitRepo()).toBe(true);
+    execFileSync.mockImplementation(() => {
       throw new Error("not a repo");
     });
-    const again = await import("./git.service.js");
-    expect(again.isGitRepo()).toBe(false);
+    expect(service.isGitRepo()).toBe(false);
   });
-
-  it("parses recent commits from unit-separated log lines", async () => {
-    execSync.mockReturnValue(
-      [
-        "aaaa\x1fbbbb\x1fFirst",
-        "cccc\x1fdddd\x1fSecond",
-      ].join("\n"),
+  it("parses recent commits and rejects invalid limits", async () => {
+    execFileSync.mockReturnValue(
+      "aaaa\x1fbbbb\x1fFirst\ncccc\x1fdddd\x1fSecond",
     );
-
-    const { getRecentCommits } = await load();
-    expect(getRecentCommits(2)).toEqual([
+    const service = await load();
+    expect(service.getRecentCommits(2)).toEqual([
       { sha: "aaaa", shortSha: "bbbb", message: "First" },
       { sha: "cccc", shortSha: "dddd", message: "Second" },
     ]);
+    expect(service.getRecentCommits(-1)).toEqual([]);
   });
-
-  it("returns empty arrays when git output is empty or fails", async () => {
-    execSync.mockReturnValue("");
-    const empty = await load();
-    expect(empty.getRecentCommits()).toEqual([]);
-    expect(empty.getWorktreeChanges()).toEqual([]);
-
-    vi.resetModules();
-    execSync.mockImplementation(() => {
-      throw new Error("fail");
+  it("returns empty lists on empty output or Git failure", async () => {
+    execFileSync.mockReturnValue("");
+    const service = await load();
+    expect(service.getRecentCommits()).toEqual([]);
+    expect(service.getWorktreeChanges()).toEqual([]);
+    execFileSync.mockImplementation(() => {
+      throw new Error("failure");
     });
-    const failing = await import("./git.service.js");
-    expect(failing.getRecentCommits()).toEqual([]);
-    expect(failing.getWorktreeChanges()).toEqual([]);
-    expect(failing.getCommitChanges("abc")).toEqual([]);
+    expect(service.getCommitChanges("abc")).toEqual([]);
+    expect(service.getWorktreeChanges()).toEqual([]);
   });
-
-  it("parses porcelain worktree and name-status commit changes", async () => {
-    // Leading spaces are trimmed by git(); keep a non-space status first.
-    execSync.mockReturnValue("?? src/b.ts\n M src/a.ts");
-    const { getWorktreeChanges } = await load();
-    expect(getWorktreeChanges()).toEqual([
-      { status: "??", path: "src/b.ts" },
-      { status: "M", path: "src/a.ts" },
+  it("preserves leading status spaces, unusual filenames, and rename targets", async () => {
+    execFileSync.mockReturnValue(
+      " M first file.ts\0R  new name.ts\0old name.ts\0?? line\nbreak.ts\0?? .evolution/objects/new\0",
+    );
+    const service = await load();
+    expect(service.getWorktreeChanges()).toEqual([
+      { status: "M", path: "first file.ts" },
+      { status: "R", path: "new name.ts" },
+      { status: "??", path: "line\nbreak.ts" },
     ]);
-
-    vi.resetModules();
-    execSync.mockReturnValue("M\tsrc/a.ts\nA\tsrc/c.ts\n");
-    const { getCommitChanges } = await import("./git.service.js");
-    expect(getCommitChanges("deadbeef")).toEqual([
+  });
+  it("passes refs as arguments and reads null-delimited commit paths", async () => {
+    execFileSync
+      .mockReturnValueOnce("abc123\n")
+      .mockReturnValueOnce("M\0src/a.ts\0A\0file\twith tab.ts\0");
+    const service = await load();
+    expect(service.getCommitChanges("HEAD; echo unwanted")).toEqual([
       { status: "M", path: "src/a.ts" },
-      { status: "A", path: "src/c.ts" },
+      { status: "A", path: "file\twith tab.ts" },
     ]);
+    expect(execFileSync.mock.calls[0]?.[0]).toBe("git");
+    expect(execFileSync.mock.calls[0]?.[1]).toContain(
+      "HEAD; echo unwanted^{commit}",
+    );
   });
 });
