@@ -1,4 +1,5 @@
 import { intro, outro, select } from "@clack/prompts";
+import { requireRepository } from "#/kernel/repository.js";
 
 import { ensure } from "#/kernel/prompts.js";
 import { GraphRepository } from "#/features/graph/graph.repository.js";
@@ -62,11 +63,18 @@ function printRelationships(id: string): Array<{ id: string; label: string }> {
 }
 
 export async function browseCommand() {
+  requireRepository();
+  if (!process.stdin.isTTY || !process.stdout.isTTY)
+    throw new Error(
+      "Browse needs an interactive terminal. Use ecs recall <task> or ecs list instead.",
+    );
   intro("ecs browse");
 
   const candidates = getBrowseCandidates();
   if (candidates.length === 0) {
-    outro("No decisions/problems found yet. Create them first with `ecs create`.");
+    outro(
+      "No decisions/problems found yet. Create them first with `ecs create`.",
+    );
     return;
   }
 
@@ -84,7 +92,7 @@ export async function browseCommand() {
             })),
             { value: EXIT, label: "Exit" },
           ],
-        })
+        }),
       ) as string;
 
       if (selected === EXIT) {
@@ -110,7 +118,7 @@ export async function browseCommand() {
           { value: BACK_TO_LIST, label: "Back to object list" },
           { value: EXIT, label: "Exit" },
         ],
-      })
+      }),
     ) as string;
 
     if (selectedLink === EXIT) {

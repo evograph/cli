@@ -1,7 +1,7 @@
 {
   "name": "@evograph/cli",
-  "version": "0.1.2",
-  "description": "Evograph CLI — evolution knowledge graph for your repo",
+  "version": "0.2.0-dev.0",
+  "description": "Evograph CLI \u2014 evolution knowledge graph for your repo",
   "type": "module",
   "homepage": "https://evograph.app",
   "repository": {
@@ -39,21 +39,24 @@
     "ecs": "./bin/ecs.js"
   },
   "scripts": {
-    "dev": "tsx src/cli/index.ts",
+    "dev": "tsx src/cli/run.ts",
     "build": "tsc && tsc-alias -p tsconfig.json",
     "prepack": "npm run build",
     "prepublishOnly": "npm run build && npm run test",
-    "bundle": "npm run build && esbuild dist/cli/index.js --bundle --platform=node --format=cjs --outfile=build/ecs.cjs",
+    "bundle": "npm run build && node scripts/bundle.mjs",
     "build:bin": "npm run bundle && pkg build/ecs.cjs --targets node22-macos-x64,node22-macos-arm64,node22-linux-x64,node22-win-x64 --output dist/bin/ecs",
-    "test": "vitest run",
+    "test": "npm run build && vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
     "@clack/prompts": "^1.7.0",
+    "@modelcontextprotocol/server": "2.3.1",
     "chalk": "^5.6.2",
-    "commander": "^15.0.0"
+    "commander": "^15.0.0",
+    "zod": "4.6.5"
   },
   "devDependencies": {
+    "@modelcontextprotocol/client": "2.3.1",
     "@types/node": "^26.1.0",
     "@yao-pkg/pkg": "^6.21.0",
     "esbuild": "^0.28.1",

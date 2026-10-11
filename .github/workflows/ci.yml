@@ -46,6 +46,7 @@ jobs:
         run: |
           npm pack --dry-run 2>&1 | tee pack.log
           grep -q 'dist/cli/index.js' pack.log
+          grep -q 'dist/cli/run.js' pack.log
           grep -q 'bin/ecs.js' pack.log
           if grep -q 'src/cli/index.ts' pack.log; then
             echo "Publish tarball must not include src/"

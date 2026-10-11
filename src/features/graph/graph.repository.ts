@@ -1,13 +1,12 @@
 import type { ECSObjectMetadata } from "#/kernel/ECSObjectRecord.js";
 import { Edge } from "#/features/objects/edge/Edge.js";
-import type { EdgeContent, Relation } from "#/features/objects/edge/EdgeContent.js";
+import type {
+  EdgeContent,
+  Relation,
+} from "#/features/objects/edge/EdgeContent.js";
 import { ObjectRepository } from "#/features/objects/object.repository.js";
 import { resolveObjectId } from "#/features/objects/object.store.js";
-import {
-  indexEdge,
-  getIncomingEdgeIds,
-  getOutgoingEdgeIds,
-} from "#/features/graph/graph.index.js";
+import { indexEdge } from "#/features/graph/graph.index.js";
 
 export type LinkResult = {
   edgeId: string;
@@ -25,22 +24,12 @@ export type Neighbor = {
 
 const repository = new ObjectRepository();
 
-function loadEdgeContent(edgeId: string): EdgeContent {
-  const edge = repository.load(edgeId);
-
-  if (!(edge instanceof Edge)) {
-    throw new Error(`Object '${edgeId}' is not an edge.`);
-  }
-
-  return edge.content;
-}
-
 export class GraphRepository {
   link(
     from: string,
     to: string,
     relation: Relation,
-    metadata: Partial<ECSObjectMetadata> = {}
+    metadata: Partial<ECSObjectMetadata> = {},
   ): LinkResult {
     const fromId = resolveObjectId(from);
     const toId = resolveObjectId(to);
@@ -56,19 +45,22 @@ export class GraphRepository {
 
   outgoing(nodeId: string): Neighbor[] {
     const resolvedId = resolveObjectId(nodeId);
-
-    return getOutgoingEdgeIds(resolvedId).map((edgeId) => {
-      const content = loadEdgeContent(edgeId);
-      return { edgeId, relation: content.relation, nodeId: content.to };
+    return repository.listByType("edge").flatMap(({ id, object }) => {
+      const content = object.content as EdgeContent;
+      return content.from === resolvedId
+        ? [{ edgeId: id, relation: content.relation, nodeId: content.to }]
+        : [];
     });
   }
 
   incoming(nodeId: string): Neighbor[] {
     const resolvedId = resolveObjectId(nodeId);
 
-    return getIncomingEdgeIds(resolvedId).map((edgeId) => {
-      const content = loadEdgeContent(edgeId);
-      return { edgeId, relation: content.relation, nodeId: content.from };
+    return repository.listByType("edge").flatMap(({ id, object }) => {
+      const content = object.content as EdgeContent;
+      return content.to === resolvedId
+        ? [{ edgeId: id, relation: content.relation, nodeId: content.from }]
+        : [];
     });
   }
 
@@ -87,10 +79,7 @@ export class GraphRepository {
     return this.walk(nodeId, (id) => this.incoming(id));
   }
 
-  private walk(
-    startId: string,
-    next: (id: string) => Neighbor[]
-  ): Neighbor[] {
+  private walk(startId: string, next: (id: string) => Neighbor[]): Neighbor[] {
     const start = resolveObjectId(startId);
     const visited = new Set<string>([start]);
     const result: Neighbor[] = [];

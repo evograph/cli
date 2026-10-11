@@ -1,186 +1,68 @@
 import fs from "node:fs";
 import path from "node:path";
-
-import { confirm, multiselect, text } from "@clack/prompts";
-
-import { ensure } from "#/kernel/prompts.js";
+import { ECS_DIR } from "#/kernel/paths.js";
 import {
   BUILTIN_AGENTS,
   detectSuggestedAgents,
   isBuiltinAgent,
   scaffoldAgentFiles,
   type BuiltinAgent,
-} from "#/features/init/scaffold-agents.js";
-
-const folders = ["objects", "refs", "index", "artifacts", "tmp"];
+} from "./scaffold-agents.js";
+import { configureMcp } from "./mcp-config.js";
 
 export type InitOptions = {
   agents?: string;
   customPath?: string;
   cliPrefix?: string;
   force?: boolean;
+  yes?: boolean;
+  mcp?: boolean;
+  mcpWrite?: boolean;
 };
 
-function ensureEvolutionDir(root: string): boolean {
-  const evolution = path.join(root, ".evolution");
-
-  if (fs.existsSync(evolution)) {
-    return false;
-  }
-
-  fs.mkdirSync(evolution);
-  for (const folder of folders) {
-    fs.mkdirSync(path.join(evolution, folder), {
-      recursive: true,
-    });
-  }
-
-  return true;
-}
-
-function parseAgentsFlag(raw: string | undefined): BuiltinAgent[] | undefined {
-  if (!raw || raw.trim() === "") {
-    return undefined;
-  }
-
-  const parts = raw.split(",").map((value) => value.trim().toLowerCase());
-  const agents: BuiltinAgent[] = [];
-
-  for (const part of parts) {
-    if (!isBuiltinAgent(part)) {
-      throw new Error(
-        `Unknown agent '${part}'. Valid: ${BUILTIN_AGENTS.join(", ")}`
-      );
-    }
-    if (!agents.includes(part)) {
-      agents.push(part);
-    }
-  }
-
-  return agents;
-}
-
-function printScaffoldResults(
-  results: ReturnType<typeof scaffoldAgentFiles>
-): void {
-  for (const result of results) {
-    const rel = path.relative(process.cwd(), result.path) || result.path;
-    if (result.status === "skipped") {
-      console.log(`Skipped (exists): ${rel}  (use --force to overwrite)`);
-    } else if (result.status === "forced") {
-      console.log(`Overwrote: ${rel}`);
-    } else {
-      console.log(`Wrote: ${rel}`);
-    }
-  }
-}
-
-async function promptAgents(): Promise<{
-  agents: BuiltinAgent[];
-  customPath?: string;
-}> {
-  const suggested = detectSuggestedAgents();
-
-  const options = BUILTIN_AGENTS.map((agent) => {
-    const option: { value: BuiltinAgent; label: string; hint?: string } = {
-      value: agent,
-      label: agent,
-    };
-    if (suggested.includes(agent)) {
-      option.hint = "detected";
-    }
-    return option;
-  });
-
-  const selected = ensure(
-    await multiselect({
-      message: "Which AI agents should ECS scaffold rules for?",
-      options,
-      initialValues: suggested.length > 0 ? suggested : (["cursor"] as BuiltinAgent[]),
-      required: true,
-    })
-  ) as BuiltinAgent[];
-
-  let customPath: string | undefined;
-
-  if (selected.includes("custom")) {
-    customPath = ensure(
-      await text({
-        message: "Path for custom agent rules file",
-        placeholder: ".myagent/RULES.md",
-        validate: (value) => {
-          if (!value || !value.trim()) {
-            return "Path is required for custom agent";
-          }
-        },
-      })
-    ) as string;
-  }
-
-  return { agents: selected, ...(customPath !== undefined ? { customPath } : {}) };
-}
-
 export async function initRepository(options: InitOptions = {}): Promise<void> {
-  const root = process.cwd();
-  const created = ensureEvolutionDir(root);
-
-  if (created) {
-    console.log("Initialized ECS repository.");
-  } else if (!options.agents) {
-    // Existing repo, interactive: ask whether to scaffold agents only
-    console.log("Repository already initialized.");
-  } else {
-    console.log("Repository already initialized — scaffolding agent files.");
-  }
-
-  let agents: BuiltinAgent[] | undefined;
-  let customPath = options.customPath;
-
-  try {
-    agents = parseAgentsFlag(options.agents);
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
-    process.exitCode = 1;
-    return;
-  }
-
-  if (!agents) {
-    // Interactive: always offer agent scaffolding on fresh init;
-    // on existing repo, ask first.
-    if (!created) {
-      const doScaffold = ensure(
-        await confirm({
-          message: "Scaffold AI agent rule files for this repo?",
-          initialValue: true,
-        })
-      );
-      if (!doScaffold) {
-        return;
+  const root = path.dirname(ECS_DIR);
+  const detected = detectSuggestedAgents(root);
+  let agents: BuiltinAgent[] = detected.length ? detected : ["codex"];
+  if (options.agents !== undefined) {
+    agents = [];
+    if (options.agents !== "none") {
+      for (const agent of options.agents
+        .split(",")
+        .map((value) => value.trim().toLowerCase())) {
+        if (!isBuiltinAgent(agent))
+          throw new Error(
+            `Unknown agent '${agent}'. Use ${BUILTIN_AGENTS.join(", ")}, or none.`,
+          );
+        if (!agents.includes(agent)) agents.push(agent);
       }
     }
-
-    const prompted = await promptAgents();
-    agents = prompted.agents;
-    customPath = prompted.customPath ?? customPath;
   }
-
-  if (agents.includes("custom") && !customPath) {
-    console.error("Custom agent selected but --custom-path was not provided.");
-    process.exitCode = 1;
-    return;
-  }
-
-  try {
-    const results = scaffoldAgentFiles({
+  if (agents.includes("custom") && !options.customPath)
+    throw new Error("Custom agent needs --custom-path <file>.");
+  const created = !fs.existsSync(ECS_DIR);
+  for (const folder of ["objects", "refs", "index", "artifacts", "tmp"])
+    fs.mkdirSync(path.join(ECS_DIR, folder), { recursive: true });
+  console.log(`${created ? "Initialized" : "Ready"}: ${ECS_DIR}`);
+  if (agents.length) {
+    for (const result of scaffoldAgentFiles({
       root,
       agents,
+      ...(options.customPath ? { customPath: options.customPath } : {}),
+      ...(options.cliPrefix ? { cliPrefix: options.cliPrefix } : {}),
       force: options.force ?? false,
-      ...(customPath !== undefined ? { customPath } : {}),
-      ...(options.cliPrefix !== undefined ? { cliPrefix: options.cliPrefix } : {}),
-    });
-    printScaffoldResults(results);
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
-    process.exitCode = 1;
+    })) {
+      console.log(`${result.status}: ${path.relative(root, result.path)}`);
+    }
   }
+  if (options.mcp || options.mcpWrite) {
+    for (const result of configureMcp(root, agents, options.mcpWrite ?? false))
+      console.log(result);
+    console.log(
+      "Restart your agent and approve the project MCP server. Configuration uses this machine's installed CLI path.",
+    );
+  }
+  console.log(
+    '\nNext: ecs remember "Your choice" --because "Why it matters"\nLater: ecs recall "Your next task"\nCheck setup: ecs doctor',
+  );
 }

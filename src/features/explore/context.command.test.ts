@@ -5,7 +5,9 @@ useEvolutionFixture();
 
 describe("contextCommand", () => {
   it("prints CLI version in the context dump", async () => {
-    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const log = vi
+      .spyOn(process.stdout, "write")
+      .mockImplementation(() => true);
     const { contextCommand } = await import("./context.command.js");
     const { getCliVersion } = await import("#/kernel/package-version.js");
 

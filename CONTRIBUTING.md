@@ -65,14 +65,16 @@ The `--` separates npm args from ECS args.
 
 ### Useful commands
 
-| Command | Purpose |
-|---------|---------|
+| Command                                                                    | Purpose                                                             |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | `npm run dev -- init --agents cursor,claude --cli-prefix "npm run dev --"` | Initialize `.evolution/` + agent rule adapters (this repo’s prefix) |
-| `npm run dev -- context` | Dump graph context for agents |
-| `npm run dev -- close-session ...` | Record problem + decision at chat end |
-| `npm run build` | Compile TypeScript to `dist/` |
-| `npx tsc --noEmit` | Type-check without writing output |
-| `npm run bundle` | Build bundled CLI artifact |
+| `npm run dev -- context "task"`                                            | Retrieve relevant, bounded reasoning for agents                     |
+| `npm run dev -- remember "choice" --because "reason"`                      | Record a meaningful decision                                        |
+| `npm run dev -- doctor`                                                    | Check setup and record integrity                                    |
+| `npm test`                                                                 | Build and run unit, CLI, and MCP integration tests                  |
+| `npm run build`                                                            | Compile TypeScript to `dist/`                                       |
+| `npx tsc --noEmit`                                                         | Type-check without writing output                                   |
+| `npm run bundle`                                                           | Build bundled CLI artifact                                          |
 
 ### Local testing workflow
 
@@ -104,11 +106,11 @@ src/
 
 ### Dependency rules
 
-| Layer | May import |
-|-------|------------|
-| `kernel/` | only `kernel/` |
+| Layer        | May import                            |
+| ------------ | ------------------------------------- |
+| `kernel/`    | only `kernel/`                        |
 | `features/*` | `kernel/`, other features when needed |
-| `cli/` | all features (composition only) |
+| `cli/`       | all features (composition only)       |
 
 Keep these boundaries intact when adding code.
 
@@ -139,6 +141,10 @@ Keep these boundaries intact when adding code.
 - Preserve backward compatibility for existing commands when possible
 - New commands should include `--help` descriptions via Commander
 - Error messages should be actionable and concise
+- Keep scripted commands non-interactive; do not prompt on missing flags without a terminal
+- MCP stdout is reserved for protocol messages; diagnostics belong on stderr
+- Test capture followed by retrieval in a separate process, not only individual helpers
+- Preserve source records and other tools' configuration when changing integrations
 
 ## Branch and commit conventions
 
@@ -243,7 +249,7 @@ The package ships compiled `dist/` and `bin/` only (see `files` in [`package.jso
    npm publish
    ```
 
-   `prepublishOnly` runs `build` and `test`; scoped packages use `publishConfig.access: "public"`.
+   `prepublishOnly` runs `build` and `test`; scoped packages use `publishConfig.access: "public"`. The current `0.2.0-dev.0` version is an unreleased development build. Select and review the intended stable/prerelease version and dist-tag before publishing; do not publish it as `latest` by accident.
 
 4. Smoke-test locally before publishing:
 

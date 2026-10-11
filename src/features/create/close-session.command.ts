@@ -11,6 +11,8 @@ import { ObjectRepository } from "#/features/objects/object.repository.js";
 import { resolveObjectId } from "#/features/objects/object.store.js";
 import { shortId } from "#/features/objects/object.view.js";
 import { ECS_DIR } from "#/kernel/paths.js";
+import { Decision } from "#/features/objects/decision/Decision.js";
+import { Problem } from "#/features/objects/problem/Problem.js";
 
 const repository = new ObjectRepository();
 const graph = new GraphRepository();
@@ -33,7 +35,7 @@ export type CloseSessionOptions = AuthorOptions & {
 function ensureRepo(): boolean {
   if (!fs.existsSync(ECS_DIR)) {
     console.error(
-      "No ECS repository found. Run `ecs init` in this directory first."
+      "No ECS repository found. Run `ecs init` in this directory first.",
     );
     process.exitCode = 1;
     return false;
@@ -54,7 +56,7 @@ export function closeSessionCommand(options: CloseSessionOptions = {}): void {
 
   if (!decisionTitle || !chosen || !rationale) {
     console.error(
-      "close-session requires --decision-title, --chosen, and --rationale"
+      "close-session requires --decision-title, --chosen, and --rationale",
     );
     process.exitCode = 1;
     return;
@@ -62,6 +64,26 @@ export function closeSessionCommand(options: CloseSessionOptions = {}): void {
 
   let problemId: string;
   let problemCreated = false;
+
+  // Validate before saving a problem, including in dry-run mode.
+  new Decision({
+    title: decisionTitle,
+    chosen,
+    rationale,
+    alternatives: [],
+    status: options.status ?? "in-progress",
+  }).validate();
+  if (
+    !options.problemId &&
+    options.problemTitle &&
+    options.problemDescription
+  ) {
+    new Problem({
+      title: options.problemTitle,
+      description: options.problemDescription,
+      severity: options.severity ?? "medium",
+    }).validate();
+  }
 
   if (options.problemId) {
     try {
@@ -73,16 +95,14 @@ export function closeSessionCommand(options: CloseSessionOptions = {}): void {
         return;
       }
     } catch (error) {
-      console.error(
-        error instanceof Error ? error.message : String(error)
-      );
+      console.error(error instanceof Error ? error.message : String(error));
       process.exitCode = 1;
       return;
     }
   } else {
     if (!options.problemTitle || !options.problemDescription) {
       console.error(
-        "close-session requires --problem-title and --problem-description (or --problem-id)"
+        "close-session requires --problem-title and --problem-description (or --problem-id)",
       );
       process.exitCode = 1;
       return;
@@ -97,9 +117,7 @@ export function closeSessionCommand(options: CloseSessionOptions = {}): void {
       console.log(`  title: ${decisionTitle}`);
       console.log(`  chosen: ${chosen}`);
       console.log(`  rationale: ${rationale}`);
-      console.log(
-        `  alternatives: ${options.alternatives ?? "(none)"}`
-      );
+      console.log(`  alternatives: ${options.alternatives ?? "(none)"}`);
       console.log(`  status: ${options.status ?? "in-progress"}`);
       console.log("[dry-run] Would link decision --[solves]--> problem");
       return;
@@ -114,7 +132,7 @@ export function closeSessionCommand(options: CloseSessionOptions = {}): void {
           ? { context: options.problemContext }
           : {}),
       },
-      meta
+      meta,
     );
     problemId = result.id;
     problemCreated = result.created;
@@ -144,7 +162,7 @@ export function closeSessionCommand(options: CloseSessionOptions = {}): void {
         ? { problem: decisionProblemText }
         : {}),
     },
-    meta
+    meta,
   );
 
   const link = graph.link(decisionResult.id, problemId, "solves", meta);
@@ -161,18 +179,18 @@ export function closeSessionCommand(options: CloseSessionOptions = {}): void {
     console.log(`Created decision ${decisionResult.id}`);
   } else {
     console.log(
-      `No evolution: decision already exists at ${decisionResult.id}`
+      `No evolution: decision already exists at ${decisionResult.id}`,
     );
   }
 
   if (link.created) {
     console.log(
-      `Linked: ${shortId(decisionResult.id)} --[solves]--> ${shortId(problemId)}`
+      `Linked: ${shortId(decisionResult.id)} --[solves]--> ${shortId(problemId)}`,
     );
     console.log(`Edge recorded at ${link.edgeId}`);
   } else {
     console.log(
-      `No evolution: this relationship already exists at ${link.edgeId}`
+      `No evolution: this relationship already exists at ${link.edgeId}`,
     );
   }
 }

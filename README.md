@@ -1,189 +1,173 @@
-# Evograph — Evolution Control System
+# Evograph — keep the reasoning behind your code
 
-> Git tracks history. Evograph tracks **evolution**.
+Save a choice and its reason. Recover it when a developer or coding agent needs it again.
 
-**Evograph** (CLI command: `ecs`) is a knowledge layer that versions *meaning* instead of files. Git stores commits and file snapshots; ECS stores **typed artifacts**—notes, problems, decisions, and changes—and the **relationships** between them, so you can see how ideas, tradeoffs, and outcomes connect over time.
+Evograph is a local CLI (`ecs`) for linked decisions, problems, notes, and code changes. Records stay in your project's `.evolution/` directory. No account, API key, subscription, or hosted model is needed.
 
-**Website:** [evograph.app](https://evograph.app) · **Package:** [`@evograph/cli`](https://www.npmjs.com/package/@evograph/cli)
+**This branch contains the unreleased `0.2.0-dev.0` workflow.** The npm release currently available is `0.1.2` and does not include the new commands below. See [Try this checkout](#try-this-checkout) to test the changes before release.
 
----
+[Website](https://evograph.app) · [Issues](https://github.com/evograph/cli/issues) · [Contributing](CONTRIBUTING.md)
 
-## Requirements
+## The everyday workflow
 
-- Node.js 22.12+
-- npm
+Requires **Node.js 22.12+** and npm. After installing a release that contains this workflow:
 
-## Install
-
-```bash
-npm install -g @evograph/cli
-```
-
-In your project repository:
-
-```bash
+```sh
+cd your-project
 ecs init
+ecs remember "Use SQLite for local storage" --because "The app must work offline"
+ecs recall "offline storage"
 ```
 
----
+`recall` returns the recorded choice, rationale, status, relationships, and source ID. It searches stored reasoning; it does not generate an AI answer or inspect your entire codebase.
 
-## What you get
+You do not need to fill out a problem form, select graph relations, or record every coding session. Save decisions that someone will need to understand later.
 
-- **Typed objects** — `note`, `problem`, `decision`, and git-linked `change` records.
-- **Interactive create** — `ecs create` guides you with prompts; optional flags for scripts and CI.
-- **Knowledge graph** — link objects with relations such as `solves`, `informed_by`, and `implemented_by`.
-- **Git-aware changes** — when you create objects, ECS can attach recent commits or working-tree changes as `change` nodes.
-- **Stable IDs** — content-addressed IDs with short prefixes (like Git short hashes); identical content deduplicates automatically.
-- **Graph views** — list, show, browse, and print evolution trees for one object or the whole project.
-- **Author attribution** — from `--author` / `--author-email`, `ECS_AUTHOR` / `ECS_AUTHOR_EMAIL`, or your Git config.
+### Associate the files that matter
 
----
+```sh
+ecs remember "Rotate refresh tokens" \
+  --because "A reused token should invalidate its session" \
+  --files src/auth
 
-## Data in your repo
-
-`ecs init` creates a `.evolution/` directory in the project root (safe to commit with your code):
-
-```
-.evolution/
-  objects/     # notes, problems, decisions, changes, edges
-  index/       # graph lookups for fast traversal
-  refs/        # reserved for future named pointers
-  artifacts/   # reserved for future large artifacts
+ecs recall "session security" --file src/auth/session.ts
 ```
 
-ECS complements Git: Git remains the source of truth for code; `.evolution/` holds project knowledge and how it connects.
+Paths are relative to where you run the command and must remain inside the project. `--files` associates paths without reading or uploading their contents. File filters match associated files and directories, including files attached through Git changes.
 
----
+### Link a problem or implementation when useful
 
-## Commands
-
-| Command | Description |
-| -------- | ------------- |
-| `ecs init` | Initialize `.evolution/` and optional AI agent rule files |
-| `ecs context` | Dump graph context for AI agents (non-interactive; use at chat start) |
-| `ecs close-session` | Record problem + decision and link them (non-interactive; use at chat end) |
-| `ecs create [type]` | Create an object (`note`, `problem`, `decision`) interactively or with flags |
-| `ecs show <id>` | Human-readable summary and relationships |
-| `ecs browse` | Interactively explore decisions/problems and follow links |
-| `ecs list` | List all object IDs |
-| `ecs link <from> <to> <relation>` | Connect two objects |
-| `ecs neighbors <id>` | Direct incoming and outgoing relationships |
-| `ecs ancestors <id>` | What led to this object (incoming edges) |
-| `ecs descendants <id>` | What follows from this object (outgoing edges) |
-| `ecs graph [id]` | Full project evolution graph, or a tree from one object |
-
-**Relations:** `solves`, `informed_by`, `implemented_by`, `supersedes`, `relates_to`
-
-Use abbreviated ID prefixes wherever a full 64-character ID is shown.
-
----
-
-## Quick start
-
-### 1. Initialize
-
-```bash
-ecs init
+```sh
+ecs remember "Use SQLite" --because "Offline operation" --problem "Network access is unreliable"
+ecs remember "Use prepared statements" --because "Keep values separate from SQL" --commit HEAD
 ```
 
-Optional: scaffold agent instructions so coding tools load ECS context:
+Use `--problem-id <id>` to reuse a problem. `--commit` resolves a real Git commit and records its changed paths and commit message, not its diff. All supplied inputs are checked before new records are saved.
 
-```bash
-ecs init --agents cursor,claude,copilot
-ecs init --agents custom --custom-path .myagent/RULES.md
-ecs init --agents cursor,claude --force   # overwrite existing adapter files
-ecs init --cli-prefix "npx ecs"           # optional: custom command prefix in agent docs (default: ecs)
+### Change your mind without erasing history
+
+```sh
+ecs remember "Use Postgres" \
+  --because "Multiple workers now need shared storage" \
+  --supersedes <earlier-decision-id>
 ```
 
-Supported agents: `cursor`, `claude`, `codex`, `copilot`, `windsurf`, `antigravity`, `custom`.
+Superseded choices are omitted from normal recall. Use `--include-superseded` to inspect history. Other statuses remain visible: a proposed or failed decision should not be mistaken for current policy.
 
-| Output | Purpose |
-| -------- | --------- |
-| `.evolution/AGENT.md` | Canonical protocol (source of truth) |
-| `AGENTS.md` | Shared adapter (Claude, Codex, Windsurf, Antigravity) |
-| `.cursor/rules/ecs.mdc` | Cursor |
-| `CLAUDE.md` | Claude Code |
-| `.github/copilot-instructions.md` | GitHub Copilot |
-| `.windsurf/rules/ecs.md` | Windsurf |
-| Your custom path | Any other agent |
+## Agent setup
 
-Agents are instructed to run `ecs context` at chat start and `ecs close-session` at the end of a decision-making session (best-effort until deeper IDE integration).
+Initialization detects existing tool markers and installs the corresponding instructions. Without a detected tool, it adds the shared `AGENTS.md` adapter. Existing project instructions are preserved; ECS updates its own marked section. Repeating setup is safe.
 
-### 2. Create objects
-
-Interactive (requires a terminal):
-
-```bash
-ecs create
-ecs create problem
+```sh
+ecs init --agents claude,cursor,codex
 ```
 
-Non-interactive examples:
+Adapters are also available for Copilot, Windsurf, Antigravity, and a custom file. Use `--agents none` for the store alone. `--yes` is accepted for scripts; initialization never needs a terminal or a questionnaire.
 
-```bash
-ecs create note --title "..." --body "..."
-ecs create problem --title "..." --description "..." --severity medium
-ecs create decision --title "..." --chosen "..." --rationale "..." --status in-progress --alternatives "a,b"
+Agents are instructed to retrieve relevant reasoning before work and record a supported, meaningful decision afterward. They should skip routine edits and duplicates, and continue your task if ECS is unavailable. Instruction files are best effort; they cannot enforce model behavior.
+
+### Local MCP tools
+
+For Claude Code:
+
+```sh
+ecs init --agents claude --mcp
 ```
 
-When you create a decision, ECS can offer to link an existing problem (`solves`) and recent Git activity.
+Restart the agent and approve the project MCP server. The setup merges an `evograph` entry into `.mcp.json` and preserves other servers. For Cursor, `--agents cursor --mcp` also writes `.cursor/mcp.json`.
 
-### 3. Inspect and link
+Read-only tools are enabled by default:
 
-```bash
-ecs list
-ecs show <id-or-prefix>
-ecs link <decision-id> <problem-id> solves
-ecs neighbors <decision-id>
-ecs graph
-ecs graph <decision-id>
+| Tool         | Use                                                               |
+| ------------ | ----------------------------------------------------------------- |
+| `ecs_recall` | Retrieve relevant, bounded context with rationale and source IDs. |
+| `ecs_get`    | Inspect a source record by ID or unique prefix.                   |
+| `ecs_status` | Check the bound project and record health.                        |
+
+Enable recording explicitly:
+
+```sh
+ecs init --agents claude --mcp-write
 ```
 
-`ecs graph` with no id prints the **complete** project graph. With an id, it prints a tree from that object.
+This adds `ecs_remember`. It accepts a choice and reason, plus optional problem, files, commit, and superseded decision. Its `dryRun` argument previews without writing. The host controls tool approval; write annotations do not provide an approval mechanism by themselves. An agent must use reasoning supported by the working session and must not invent why a choice was made.
 
-### 4. AI agent workflow
+The server uses the official MCP SDK and stdio. It opens no network listener and makes no model/API calls. Records returned to your coding agent may become part of that agent's context; its own data handling still applies. Never store secrets or whole transcripts in ECS.
 
-```bash
-# Chat start
-ecs context
+For another MCP host, configure this command with the project directory:
 
-# Chat end
-ecs close-session \
-  --problem-title "..." \
-  --problem-description "..." \
-  --decision-title "..." \
-  --chosen "..." \
-  --rationale "..." \
-  --alternatives "a,b,c"
+```sh
+ecs --cwd /absolute/path/to/project mcp
+# Add --write only if you want the recording tool.
 ```
 
-### 5. Author override (optional)
+Generated config uses this machine's Node and CLI paths to avoid surprise downloads. Regenerate it after moving the CLI or project, or on another machine. Other agents can use the generated instruction files and CLI without MCP. See [Claude Code project MCP configuration](https://code.claude.com/docs/en/mcp).
 
-```bash
-ecs create --author "Jane" --author-email "jane@example.com"
-ECS_AUTHOR=ci-bot ECS_AUTHOR_EMAIL=bot@ci ecs create
+## Find the right amount of context
+
+```sh
+ecs recall "authentication" --limit 3
+ecs context "authentication" --max-chars 4000
+ecs recall "authentication" --json
 ```
 
-Author metadata does not change object IDs.
+`context` and `recall` are the same retrieval command. The default is five matching records and at most 8,000 output characters. `--max-chars` bounds the entire text/JSON response, including the version header for text. It preserves valid JSON, reports omitted records, and abbreviates long fields. Use `ecs show <id>` for the full record.
 
----
+Retrieval uses text matches and directly connected reasoning, prioritizes decision context, and sorts equal matches by recency. It is deterministic lexical retrieval, not semantic search. Empty queries show recent reasoning. No matches produce a clear empty result rather than unrelated records. For corrupt records, recall warns and skips them; run `ecs doctor` to investigate.
 
-## Roadmap
+## Check your setup
 
-- **Now:** typed objects, graph traversal, interactive create, git change linking, agent scaffolding, `context` / `close-session`
-- **Next:** named refs, richer git linking, stronger agent enforcement (hooks / MCP)
-- **Later:** `ecs ask` — AI over the evolution graph
+```sh
+ecs             # Project status and next step
+ecs doctor      # Store integrity, missing references, and adapters
+ecs list        # Readable IDs, types, and titles
+ecs show <id>   # Full reasoning and relationships
+```
 
----
+Commands find the nearest store from subdirectories and stop at a Git project boundary. To operate from elsewhere, put `--cwd <directory>` before the command. Graph reads use canonical relationship records, so an absent local index does not hide shared history.
 
-## Version and status
+`doctor --json`, `status --json`, `list --json`, and `show <id> --json` support scripts. `list --ids` preserves raw ID listing, including edge objects. Unique hexadecimal prefixes need at least four characters.
 
-Early release (v0.1). Interactive commands need a TTY. See [CHANGELOG.md](./CHANGELOG.md) for release notes.
+## Detailed graph tools
 
----
+The earlier commands remain available:
 
-## Contributing
+| Command                               | Purpose                                                                          |
+| ------------------------------------- | -------------------------------------------------------------------------------- |
+| `create [note\|problem\|decision]`    | Guided creation in a terminal, or flags for scripts.                             |
+| `close-session`                       | Detailed linked problem/decision capture with alternatives and expected outcome. |
+| `link <from> <to> <relation>`         | Connect existing records.                                                        |
+| `neighbors <id>`                      | Direct incoming and outgoing links.                                              |
+| `ancestors <id>` / `descendants <id>` | Follow the graph.                                                                |
+| `graph [id]`                          | Full graph or a selected tree.                                                   |
+| `browse`                              | Interactive graph navigation in a terminal.                                      |
 
-Bug reports, ideas, and pull requests are welcome. Development setup and publish workflow live in [CONTRIBUTING.md](./CONTRIBUTING.md). See also [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) and [SECURITY.md](./SECURITY.md).
+Run `ecs <command> --help` for options. Non-interactive `create` fails promptly when required fields are missing. Problems default to medium severity; decisions default to in-progress status. Existing custom status values in old records remain readable.
 
-**Maintainer:** Muhammad Atif · [acefolio.dev](https://acefolio.dev) · GitHub [@acefolioDev](https://github.com/acefolioDev)
+## Data and compatibility
+
+- Existing typed and legacy object layouts remain readable; no migration is required.
+- Object IDs hash the type/schema/content. Author and timestamps do not change identity.
+- Repeated identical captures deduplicate. New file associations are part of a decision's content.
+- Records and links are append-only. Supersession preserves the original decision.
+- Commit `.evolution/objects/` with your code when you want shared reasoning. Review records for sensitive data before committing, just as you review source.
+- ECS has no telemetry, automatic transcript collection, cloud sync, or background service.
+
+## Try this checkout
+
+```sh
+git clone https://github.com/evograph/cli.git
+cd cli
+git switch improve/ecs-workflow
+npm ci
+npm test
+node bin/ecs.js --cwd /absolute/path/to/your-project init
+node bin/ecs.js --cwd /absolute/path/to/your-project remember "Choice" --because "Reason"
+node bin/ecs.js --cwd /absolute/path/to/your-project recall "Task"
+```
+
+`npm test` builds the CLI and runs unit, real CLI, and real stdio MCP tests. For agent setup on this checkout, `node bin/ecs.js --cwd /path/to/project init --agents claude --mcp-write` configures the built binary directly. For instruction-only setup, pass an absolute CLI command with `--cli-prefix` or install the local package before using `ecs` in those files.
+
+This is an early release. Report a reproducible issue without private project content. [Security policy](SECURITY.md) · [Code of conduct](CODE_OF_CONDUCT.md).
+
+ISC licensed. Maintained by [Muhammad Atif](https://github.com/acefolioDev).

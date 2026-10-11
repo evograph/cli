@@ -35,14 +35,27 @@ function getTypedObjectPath(type: string, id: string): string {
 }
 
 function findObjectPath(id: string): string | undefined {
+  if (!/^[a-f0-9]{64}$/.test(id)) return undefined;
   const legacyPath = getLegacyObjectPath(id);
   if (fs.existsSync(legacyPath)) {
     return legacyPath;
   }
 
-  const typeFolders = ["notes", "problems", "decisions", "edges", "changes", "misc"];
+  const typeFolders = [
+    "notes",
+    "problems",
+    "decisions",
+    "edges",
+    "changes",
+    "misc",
+  ];
   for (const folder of typeFolders) {
-    const typedPath = path.join(OBJECTS_DIR, folder, id.substring(0, 2), id.substring(2));
+    const typedPath = path.join(
+      OBJECTS_DIR,
+      folder,
+      id.substring(0, 2),
+      id.substring(2),
+    );
     if (fs.existsSync(typedPath)) {
       return typedPath;
     }
@@ -52,6 +65,10 @@ function findObjectPath(id: string): string | undefined {
 }
 
 export function resolveObjectId(input: string): string {
+  if (!/^[a-f0-9]{4,64}$/.test(input))
+    throw new Error(
+      "Use an object ID or an unambiguous hexadecimal prefix of at least four characters.",
+    );
   if (objectExists(input)) {
     return input;
   }
@@ -62,7 +79,7 @@ export function resolveObjectId(input: string): string {
     (id) =>
       id.startsWith(input) ||
       id.substring(2) === input ||
-      id.substring(2).startsWith(input)
+      id.substring(2).startsWith(input),
   );
 
   if (matches.length === 1) {
@@ -71,7 +88,7 @@ export function resolveObjectId(input: string): string {
 
   if (matches.length > 1) {
     throw new Error(
-      `Ambiguous object id '${input}'. Matches: ${matches.join(", ")}`
+      `Ambiguous object id '${input}'. Matches: ${matches.join(", ")}`,
     );
   }
 
@@ -85,8 +102,9 @@ export type SaveObjectResult = {
 
 export function saveObject(
   record: ECSObjectRecord,
-  id: string
+  id: string,
 ): SaveObjectResult {
+  if (!/^[a-f0-9]{64}$/.test(id)) throw new Error("Invalid object ID.");
   const filePath = getTypedObjectPath(record.header.type, id);
 
   fs.mkdirSync(path.dirname(filePath), {

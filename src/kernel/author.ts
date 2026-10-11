@@ -4,7 +4,11 @@ import type { Author } from "#/kernel/ECSObjectRecord.js";
 
 function getGitConfig(key: string): string | undefined {
   try {
-    const value = execSync(`git config ${key}`, { encoding: "utf8" }).trim();
+    const value = execSync(`git config ${key}`, {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      timeout: 1500,
+    }).trim();
     return value || undefined;
   } catch {
     return undefined;
@@ -17,7 +21,7 @@ export type AuthorOverrides = {
 };
 
 export function resolveAuthor(
-  overrides: AuthorOverrides = {}
+  overrides: AuthorOverrides = {},
 ): Author | undefined {
   const name =
     overrides.name ?? process.env.ECS_AUTHOR ?? getGitConfig("user.name");

@@ -13,4 +13,6 @@ export interface DecisionContent {
   rationale: string;
   expectedOutcome?: string;
   status: string;
+  /** Repository-relative paths relevant to this decision; no file content. */
+  files?: string[];
 }

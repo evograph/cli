@@ -23,13 +23,20 @@ function readEdgeIds(direction: Direction, nodeId: string): string[] {
     return [];
   }
 
-  return JSON.parse(fs.readFileSync(filePath, "utf8")) as string[];
+  try {
+    const value: unknown = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    return Array.isArray(value)
+      ? value.filter((id): id is string => typeof id === "string")
+      : [];
+  } catch {
+    return [];
+  }
 }
 
 function appendEdgeId(
   direction: Direction,
   nodeId: string,
-  edgeId: string
+  edgeId: string,
 ): void {
   const filePath = getIndexPath(direction, nodeId);
   const edgeIds = readEdgeIds(direction, nodeId);

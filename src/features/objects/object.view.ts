@@ -13,7 +13,10 @@ export function objectLabel(id: string, object: ECSObject<unknown>): string {
   return `${object.type}: ${objectTitle(object)} (${shortId(id)})`;
 }
 
-export function renderHumanSummary(id: string, object: ECSObject<unknown>): string {
+export function renderHumanSummary(
+  id: string,
+  object: ECSObject<unknown>,
+): string {
   const lines: string[] = [];
   const author = object.metadata.author;
 
@@ -22,7 +25,7 @@ export function renderHumanSummary(id: string, object: ECSObject<unknown>): stri
   lines.push(`Created: ${object.metadata.createdAt}`);
   if (author?.name) {
     lines.push(
-      `Author: ${author.name}${author.mail ? ` <${author.mail}>` : ""}`
+      `Author: ${author.name}${author.mail ? ` <${author.mail}>` : ""}`,
     );
   }
   lines.push("");
@@ -53,9 +56,11 @@ export function renderHumanSummary(id: string, object: ECSObject<unknown>): stri
       rationale?: string;
       expectedOutcome?: string;
       status?: string;
+      files?: string[];
     };
     lines.push(`Status: ${content.status ?? "unknown"}`);
     lines.push(`Chosen: ${content.chosen ?? "(missing)"}`);
+    if (content.files?.length) lines.push(`Files: ${content.files.join(", ")}`);
     lines.push("");
     lines.push("Rationale:");
     lines.push(content.rationale ?? "(missing)");
